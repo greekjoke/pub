@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF8">
+  <meta http-equiv="Cache-Control" content="max-age=3600, must-revalidate" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Irregular verbs</title>
@@ -9,6 +10,11 @@
    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
 </head>
 <style>
+  html, body {
+    height: 100%;
+    padding: 0;
+    margin: 0;
+  }
   body {
     background-color: rgb(45, 45, 45);
     color: #aaa;
@@ -25,15 +31,7 @@
   }
   .hideAnswer input.answer {
     color: transparent;
-  }
-  /*
-  #bnCheck {
-    visibility: hidden;
-  }
-  .hideAnswer #bnCheck {
-    visibility: visible;
-  }
-  */
+  }  
   .hideAnswer #bnNext {
     visibility: hidden;
   }
@@ -53,104 +51,119 @@
     display: block;
     text-align: center;
   }  
+  #main {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 100%;
+  }
+  #con {  
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+  }
 </style>
 <body>
-  <div id="con">
-    <div id="fields">
-      <label>
-        <span>Перевод</span>
-        <input id="tr" value="" readonly autocomplete="off">
-      </label>
-      <label>
-        <span>Verb</span>
-        <input id="vb" class="answer" readonly value="" autocomplete="off">
-      </label>
-      <label>
-        <span>Past Tense</span>
-        <input id="pt" class="answer" readonly value="" autocomplete="off">
-      </label>
-      <label>
-        <span>Past Participle</span>
-        <input id="pp" class="answer" readonly value="" autocomplete="off">
-      </label>
-    </div>
-    <div id="ctrl">
-      <button id="bnCheck">Check</button>
-      <button id="bnNext">Next</button>
-    </div>
-  </div>  
+  <div id="main">
+    <div id="con">
+      <div id="fields">
+        <label>
+          <span>Перевод</span>
+          <input id="tr" value="" readonly autocomplete="off">
+        </label>
+        <label>
+          <span>Verb</span>
+          <input id="vb" class="answer" readonly value="" autocomplete="off">
+        </label>
+        <label>
+          <span>Past Tense</span>
+          <input id="pt" class="answer" readonly value="" autocomplete="off">
+        </label>
+        <label>
+          <span>Past Participle</span>
+          <input id="pp" class="answer" readonly value="" autocomplete="off">
+        </label>
+      </div>
+      <div id="ctrl">
+        <button id="bnCheck">Check</button>
+        <button id="bnNext">Next</button>
+      </div>
+    </div>  
+  </div>
 </body>
 <script>
-  const data = `быть;be;was / were;been;3
-становиться;become;became;become;3
-начинать;begin;began;begun;3
-ломать;break;broke;broken;3
-приносить;bring;brought;brought;2
-строить;build;built;built;2
-покупать;buy;bought;bought;2
-мочь;can;could;been able;3
-поймать;catch;caught;caught;2
-выбрать;choose;chose;chosen;3
-приходить;come;came;come;3
-стоить;cost;cost;cost;1
-резать;cut;cut;cut;1
-копать;dig;dug;dug;2
-делать;do;did;done;3
-рисовать;draw;drew;drawn;3
-пить;drink;drank;drunk;3
-водить;drive;drove;driven;3
-есть;eat;ate;eaten;3
-падать;fall;fell;fallen;3
-чувствовать;feel;felt;felt;2
-найти;find;found;found;2
-лететь;fly;flew;flown;3
-забыть;forget;forgot;forgotten;3
-получить;get;got;got;2
-дать;give;gave;given;3
-идти;go;went;gone;3
-иметь;have;had;had;2
-слышать;hear;heard;heard;2
-держать;hold;held;held;2
-причинять боль;hurt;hurt;hurt;1
-хранить;keep;kept;kept;2
-знать;know;knew;known;3
-учить;learn;learnt;learnt;2
-покинуть;leave;left;left;2
-позволять;let;let;let;1
-потерять;lose;lost;lost;2
-создать;make;made;made;2
-иметь ввиду;mean;meant;meant;2
-встречать;meet;met;met;2
-платить;pay;paid;paid;2
-поместить;put;put;put;1
-читать;read;read;read;1
-ехать верхом;ride;rode;ridden;3
-звонить;ring;rang;rung;3
-бежать;run;ran;run;3
-сказать;say;said;said;2
-видеть;see;saw;seen;3
-продать;sell;sold;sold;2
-отправить;send;sent;sent;2
-сиять;shine;shone;shone;2
-показать;show;showed;shown;3
-петь;sing;sang;sung;3
-сидеть;sit;sat;sat;2
-спать;sleep;slept;slept;2
-говорить;speak;spoke;spoken;3
-тратить;spend;spent;spent;2
-стоять;stand;stood;stood;2
-украсть;steal;stole;stolen;3
-плыть;swim;swam;swum;3
-взять;take;tooke;taken;3
-учить;teach;taught;taught;2
-расказать (кому-то);tell;told;told;2
-думать;think;thought;thought;2
-бросать;throw;threw;thrown;3
-понять;understand;understood;understood;2
-проснуться;wake up;woke up;woken up;3
-носить;wear;wore;worn;3
-победить;win;won;won;2
-писать;write;wrote;written;3`;
+  const data = `быть;be;was / were;been;3;1
+становиться;become;became;become;3;1
+начинать;begin;began;begun;3;1
+ломать;break;broke;broken;3;1
+приносить;bring;brought;brought;2;1
+строить;build;built;built;2;1
+покупать;buy;bought;bought;2;1
+мочь;can;could;been able;3;1
+поймать;catch;caught;caught;2;1
+выбрать;choose;chose;chosen;3;1
+приходить;come;came;come;3;1
+стоить;cost;cost;cost;1;1
+резать;cut;cut;cut;1;1
+копать;dig;dug;dug;2;1
+делать;do;did;done;3;1
+рисовать;draw;drew;drawn;3;1
+пить;drink;drank;drunk;3;1
+водить;drive;drove;driven;3;1
+есть;eat;ate;eaten;3;1
+падать;fall;fell;fallen;3;1
+чувствовать;feel;felt;felt;2;1
+найти;find;found;found;2;1
+лететь;fly;flew;flown;3;1
+забыть;forget;forgot;forgotten;3;1
+получить;get;got;got;2;1
+дать;give;gave;given;3;1
+идти;go;went;gone;3;1
+иметь;have;had;had;2;1
+слышать;hear;heard;heard;2;1
+держать;hold;held;held;2;1
+причинять боль;hurt;hurt;hurt;1;1
+хранить;keep;kept;kept;2;1
+знать;know;knew;known;3;1
+учить;learn;learnt;learnt;2;1
+покинуть;leave;left;left;2;1
+позволять;let;let;let;1;1
+потерять;lose;lost;lost;2;1
+создать;make;made;made;2;1
+иметь ввиду;mean;meant;meant;2;1
+встречать;meet;met;met;2;1
+платить;pay;paid;paid;2;1
+поместить;put;put;put;1;1
+читать;read;read;read;1;1
+ехать верхом;ride;rode;ridden;3;1
+звонить;ring;rang;rung;3;1
+бежать;run;ran;run;3;1
+сказать;say;said;said;2;1
+видеть;see;saw;seen;3;1
+продать;sell;sold;sold;2;1
+отправить;send;sent;sent;2;1
+сиять;shine;shone;shone;2;1
+показать;show;showed;shown;3;1
+петь;sing;sang;sung;3;1
+сидеть;sit;sat;sat;2;1
+спать;sleep;slept;slept;2;1
+говорить;speak;spoke;spoken;3;1
+тратить;spend;spent;spent;2;1
+стоять;stand;stood;stood;2;1
+украсть;steal;stole;stolen;3;1
+плыть;swim;swam;swum;3;1
+взять;take;took;taken;3;1
+учить;teach;taught;taught;2;1
+расказать (кому-то);tell;told;told;2;1
+думать;think;thought;thought;2;1
+бросать;throw;threw;thrown;3;1
+понять;understand;understood;understood;2;1
+проснуться;wake up;woke up;woken up;3;1
+носить;wear;wore;worn;3;1
+победить;win;won;won;2;1
+писать;write;wrote;written;3;1`;
 
 const lkup = {};
 let flat = [];
