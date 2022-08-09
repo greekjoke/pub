@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Irregular verbs</title>
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+   integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+</head>
+<style>
+  body {
+    background-color: rgb(45, 45, 45);
+    color: #aaa;
+    font-size: 2.0rem;
+  }
+  button {
+    margin: 5px;
+    font-size: 2.0rem;
+    cursor: pointer;
+  }
+  input {
+    background-color: #999;
+    font-size: 2.0rem;
+  }
+  .hideAnswer input.answer {
+    color: transparent;
+  }
+  /*
+  #bnCheck {
+    visibility: hidden;
+  }
+  .hideAnswer #bnCheck {
+    visibility: visible;
+  }
+  */
+  .hideAnswer #bnNext {
+    visibility: hidden;
+  }
+  label {
+    display: block;
+    margin: 15px;
+  }
+  label span {
+    display: inline-block;
+    width: 220px;
+    text-align: right;
+  }
+  #fields {
+    text-align: center;
+  }
+  #ctrl {
+    display: block;
+    text-align: center;
+  }  
+</style>
+<body>
+  <div id="con">
+    <div id="fields">
+      <label>
+        <span>Перевод</span>
+        <input id="tr" value="" readonly autocomplete="off">
+      </label>
+      <label>
+        <span>Verb</span>
+        <input id="vb" class="answer" readonly value="" autocomplete="off">
+      </label>
+      <label>
+        <span>Past Tense</span>
+        <input id="pt" class="answer" readonly value="" autocomplete="off">
+      </label>
+      <label>
+        <span>Past Participle</span>
+        <input id="pp" class="answer" readonly value="" autocomplete="off">
+      </label>
+    </div>
+    <div id="ctrl">
+      <button id="bnCheck">Check</button>
+      <button id="bnNext">Next</button>
+    </div>
+  </div>  
+</body>
+<script>
+  const data = `быть;be;was / were;been;3
+становиться;become;became;become;3
+начинать;begin;began;begun;3
+ломать;break;broke;broken;3
+приносить;bring;brought;brought;2
+строить;build;built;built;2
+покупать;buy;bought;bought;2
+мочь;can;could;been able;3
+поймать;catch;caught;caught;2
+выбрать;choose;chose;chosen;3
+приходить;come;came;come;3
+стоить;cost;cost;cost;1
+резать;cut;cut;cut;1
+копать;dig;dug;dug;2
+делать;do;did;done;3
+рисовать;draw;drew;drawn;3
+пить;drink;drank;drunk;3
+водить;drive;drove;driven;3
+есть;eat;ate;eaten;3
+падать;fall;fell;fallen;3
+чувствовать;feel;felt;felt;2
+найти;find;found;found;2
+лететь;fly;flew;flown;3
+забыть;forget;forgot;forgotten;3
+получить;get;got;got;2
+дать;give;gave;given;3
+идти;go;went;gone;3
+иметь;have;had;had;2
+слышать;hear;heard;heard;2
+держать;hold;held;held;2
+причинять боль;hurt;hurt;hurt;1
+хранить;keep;kept;kept;2
+знать;know;knew;known;3
+учить;learn;learnt;learnt;2
+покинуть;leave;left;left;2
+позволять;let;let;let;1
+потерять;lose;lost;lost;2
+создать;make;made;made;2
+иметь ввиду;mean;meant;meant;2
+встречать;meet;met;met;2
+платить;pay;paid;paid;2
+поместить;put;put;put;1
+читать;read;read;read;1
+ехать верхом;ride;rode;ridden;3
+звонить;ring;rang;rung;3
+бежать;run;ran;run;3
+сказать;say;said;said;2
+видеть;see;saw;seen;3
+продать;sell;sold;sold;2
+отправить;send;sent;sent;2
+сиять;shine;shone;shone;2
+показать;show;showed;shown;3
+петь;sing;sang;sung;3
+сидеть;sit;sat;sat;2
+спать;sleep;slept;slept;2
+говорить;speak;spoke;spoken;3
+тратить;spend;spent;spent;2
+стоять;stand;stood;stood;2
+украсть;steal;stole;stolen;3
+плыть;swim;swam;swum;3
+взять;take;tooke;taken;3
+учить;teach;taught;taught;2
+расказать (кому-то);tell;told;told;2
+думать;think;thought;thought;2
+бросать;throw;threw;thrown;3
+понять;understand;understood;understood;2
+проснуться;wake up;woke up;woken up;3
+носить;wear;wore;worn;3
+победить;win;won;won;2
+писать;write;wrote;written;3`;
+
+const lkup = {};
+let flat = [];
+
+data.split("\n").forEach((line) => {
+  line = line.trim();
+  if (line.length > 0) {
+    const fields = line.split(';');
+    lkup[fields[0]] = fields;
+    flat.push(fields[0]);
+  }
+});
+
+function shuffle(array) {
+  let currentIndex = array.length,  randomIndex;
+
+  // While there remain elements to shuffle.
+  while (currentIndex != 0) {
+
+    // Pick a remaining element.
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    // And swap it with the current element.
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex], array[currentIndex]];
+  }
+
+  return array;
+}
+
+let i = 0;
+
+function next() {  
+  i = i % flat.length;
+  const ru = flat[i];
+  const item = lkup[ru];
+  $('#tr').val(ru);
+  $('#vb').val(item[1]);
+  $('#pt').val(item[2]);
+  $('#pp').val(item[3]);
+  $('#con').addClass('hideAnswer');
+  i++;
+}
+
+function check() {
+  $('#con').removeClass('hideAnswer');
+}
+
+$('#bnCheck').click(()=>check());
+$('#bnNext').click(()=>next());
+
+flat = shuffle(flat);
+next();
+
+</script>
+</html>
