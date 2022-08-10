@@ -4,7 +4,7 @@
   <meta charset="UTF8">
   <meta http-equiv="Cache-Control" content="max-age=3600, must-revalidate" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=0.8">
   <title>Irregular verbs</title>
   <script src="https://code.jquery.com/jquery-2.2.4.min.js"
    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
@@ -41,8 +41,8 @@
   }
   label span {
     display: inline-block;
-    width: 220px;
-    text-align: right;
+    width: 200px;    
+    text-align: left;
   }
   #fields {
     text-align: center;
@@ -63,11 +63,28 @@
     flex-direction: column;
     justify-content: center;
     flex: 1;
+  }  
+  #setup a {
+    display: inline-block;
+    margin: 2px 12px;
+    text-decoration: none;
+    color: #555;
+  }
+  #setup a:hover,
+  #setup a.selected
+  {
+    color: yellow;
+    text-decoration: underline;
   }
 </style>
 <body>
   <div id="main">
     <div id="con">
+      <div id="setup">
+        <a data-value="1" href="?set=1">set #1</a>
+        <a data-value="2" href="?set=2">set #2</a>
+        <a data-value="0" id="set0" href="?set=0">all</a>
+      </div>
       <div id="fields">
         <label>
           <span>Перевод</span>
@@ -78,7 +95,7 @@
           <input id="vb" class="answer" readonly value="" autocomplete="off">
         </label>
         <label>
-          <span>Past Tense</span>
+          <span>Past Simple</span>
           <input id="pt" class="answer" readonly value="" autocomplete="off">
         </label>
         <label>
@@ -94,76 +111,155 @@
   </div>
 </body>
 <script>
-  const data = `быть;be;was / were;been;3;1
+  const data = `возникать;arise;arose;arisen;3;2
+пробуждать;awake;awoke;awoke;2;2
+быть;be;was, were;been;3;1
+нести;bear;bore;borne;3;2
+бить;beat;beat;beaten;3;2
 становиться;become;became;become;3;1
 начинать;begin;began;begun;3;1
+сгибать;bend;bent;bent;2;2
+держать пари;bet;bet;bet;1;2
+связывать;bind;bound;bound;2;2
+кусать;bite;bit;bitten;3;2
+истекать кровью;bleed;bled;bled;2;2
+дуть;blow;blew;blown;3;2
 ломать;break;broke;broken;3;1
 приносить;bring;brought;brought;2;1
 строить;build;built;built;2;1
+лопаться;burst;burst;burst;1;2
 покупать;buy;bought;bought;2;1
 мочь;can;could;been able;3;1
 поймать;catch;caught;caught;2;1
 выбрать;choose;chose;chosen;3;1
 приходить;come;came;come;3;1
 стоить;cost;cost;cost;1;1
+ползать;creep;crept;crept;2;2
 резать;cut;cut;cut;1;1
+иметь дело;deal;dealt;dealt;2;2
 копать;dig;dug;dug;2;1
+нырять;dive;dived, dove;dived;3;2
 делать;do;did;done;3;1
 рисовать;draw;drew;drawn;3;1
+мечтать;dream;dreamed, dreamt;dreamed, dreamt;2;2
 пить;drink;drank;drunk;3;1
 водить;drive;drove;driven;3;1
 есть;eat;ate;eaten;3;1
 падать;fall;fell;fallen;3;1
+кормить;feed;fed;fed;2;1
 чувствовать;feel;felt;felt;2;1
+борться;fight;fought;fought;2;2
 найти;find;found;found;2;1
+поместиться / соответствовать;fit;fitted, fit;fitted, fit;2;2
+бежать;flee;fled;fled;2;2
+швырять;fling;flung;flung;2;2
 лететь;fly;flew;flown;3;1
+запрещать;forbid;forbade;forbidden;3;2
 забыть;forget;forgot;forgotten;3;1
+простить;forgive;forgave;forgiven;3;2
+заморозить;freeze;froze;frozen;3;2
 получить;get;got;got;2;1
 дать;give;gave;given;3;1
 идти;go;went;gone;3;1
+расти;grow;grew;grown;3;1
+повесить (картину);hang (a picture);hung;hung;2;2
 иметь;have;had;had;2;1
 слышать;hear;heard;heard;2;1
+спрятать;hide;hid;hidden;3;2
+бить;hit;hit;hit;1;2
 держать;hold;held;held;2;1
 причинять боль;hurt;hurt;hurt;1;1
 хранить;keep;kept;kept;2;1
+стоять на коленях;kneel;kneeled, knelt;kneeled, knelt;2;2
+вязать;knit;knitted;knitted;2;2
 знать;know;knew;known;3;1
-учить;learn;learnt;learnt;2;1
+класть;lay;laid;laid;2;2
+привести;lead;led;led;2;2
+учиться;learn;learned, learnt;learned, learnt;2;1
 покинуть;leave;left;left;2;1
+давать в долг;lend;lent;lent;2;2
 позволять;let;let;let;1;1
+лежать (полулежа);lie (recline);lay;lain;3;2
+солгать (говорить неправду);lie (tell a falsehood);lied;lied;2;2
+легкий;light;lighted, lit;lighted, lit;2;2
 потерять;lose;lost;lost;2;1
 создать;make;made;made;2;1
 иметь ввиду;mean;meant;meant;2;1
 встречать;meet;met;met;2;1
 платить;pay;paid;paid;2;1
+умолять;plead;pleaded;pled;3;2
+доказывать;prove;proved;proved, proven;3;2
 поместить;put;put;put;1;1
+покидать;quit;quit;quit;1;2
 читать;read;read;read;1;1
 ехать верхом;ride;rode;ridden;3;1
 звонить;ring;rang;rung;3;1
+подниматься;rise;rose;risen;3;2
 бежать;run;ran;run;3;1
 сказать;say;said;said;2;1
 видеть;see;saw;seen;3;1
+искать;seek;sought;sought;2;2
 продать;sell;sold;sold;2;1
 отправить;send;sent;sent;2;1
+устанавливать;set;set;set;1;2
+шить;sew;sewed;sewed, sewn;3;2
+встряхнуть;shake;shook;shaken;3;2
 сиять;shine;shone;shone;2;1
+блестеть;shine (rub);shined;shined;2;2
+стрелять;shoot;shot;shot;2;2
 показать;show;showed;shown;3;1
+сокращаться / сжиматься;shrink;shrank;shrunk;3;2
+закрывать;shut;shut;shut;1;2
 петь;sing;sang;sung;3;1
+потопить;sink;sank;sunk;3;2
 сидеть;sit;sat;sat;2;1
+убивать;slay;slew;slain;3;2
 спать;sleep;slept;slept;2;1
+скользить;slide;slid;slid;2;2
+надрезать;slit;slit;slit;1;2
 говорить;speak;spoke;spoken;3;1
 тратить;spend;spent;spent;2;1
+крутиться;spin;spun;spun;2;2
+плевать;spit;spat, spit;spat, spit;2;2
+расколоть;split;split;split;1;2
+распространять;spread;spread;spread;1;2
+прыгать;spring;sprang;sprung;3;2
 стоять;stand;stood;stood;2;1
 украсть;steal;stole;stolen;3;1
-плыть;swim;swam;swum;3;1
+придерживаться;stick;stuck;stuck;2;2
+ужалить;sting;stung;stung;2;2
+вонять;stink;stank;stunk;3;2
+шагать;stride;strode;stridden;3;2
+ударять (бить);strike (hit);struck;struck;2;2
+нанизывать;string;strung;strung;2;2
+клястся;swear;swore;sworn;3;2
+подметать;sweep;swept;swept;2;2
+набухать;swell;swelled;swollen;3;2
+плавать;swim;swam;swum;3;1
+качать;swing;swing;swung;3;2
 взять;take;took;taken;3;1
 учить;teach;taught;taught;2;1
+рвать;tear;tore;torn;3;2
 расказать (кому-то);tell;told;told;2;1
 думать;think;thought;thought;2;1
 бросать;throw;threw;thrown;3;1
 понять;understand;understood;understood;2;1
 проснуться;wake up;woke up;woken up;3;1
 носить;wear;wore;worn;3;1
+вступать в брак;wed;wed;wed;1;2
+плакать;weep;wept;wept;2;2
+приветствовать;welcome;welcomed;welcomed;2;2
+мочить;wet;wet;wet;1;2
 победить;win;won;won;2;1
+выжимать;wring;wrung;wrung;2;2
 писать;write;wrote;written;3;1`;
+
+const url = document.location.href.toLowerCase();
+let filterSet = 1;
+if (url.indexOf('?set=2') != -1) filterSet = 2;
+if (url.indexOf('?set=0') != -1) filterSet = 0;
+$('#setup a').removeClass('selected');
+$('#setup a[data-value="'+filterSet+'"]').addClass('selected');
 
 const lkup = {};
 let flat = [];
@@ -172,8 +268,12 @@ data.split("\n").forEach((line) => {
   line = line.trim();
   if (line.length > 0) {
     const fields = line.split(';');
-    lkup[fields[0]] = fields;
-    flat.push(fields[0]);
+    const group = fields[4];
+    const set = parseInt(fields[5]);
+    if (filterSet === 0 || filterSet === set) {
+      lkup[fields[0]] = fields;
+      flat.push(fields[0]);
+    }
   }
 });
 
