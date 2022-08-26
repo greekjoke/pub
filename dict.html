@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="Cache-Control" content="max-age=3600, must-revalidate" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dictionary</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/jszip.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/xlsx.js"></script>
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+</head>
+<style>
+  html, body {
+    height: 100%;
+    padding: 0;
+    margin: 0;
+  }
+  body {
+    background-color: rgb(45, 45, 45);
+    color: #aaa;
+    font-size: 2.0rem;
+  }
+  button {
+    margin: 5px;
+    font-size: 2.0rem;
+    cursor: pointer;
+  }
+  input {
+    background-color: #999;
+    font-size: 2.0rem;
+  }
+  input[type="checkbox"] {
+    min-width: 1.0rem;
+    min-height: 1.0rem;
+    margin: 5px 9px;
+  }
+  label {
+    display: block;
+    margin: 15px;
+  }
+  label span {
+    display: inline-block;
+    width: 200px;    
+    text-align: left;
+  }
+  a {
+    display: inline-block;
+    margin: 2px 12px;
+    text-decoration: none;
+    color: #555;
+  }
+  a:hover,
+  a.selected
+  {
+    color: yellow;
+    text-decoration: underline;
+  }
+  #main {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 100%;
+  }
+  #con {  
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+  }  
+  #fields {
+    text-align: center;
+  }
+  #ctrl {
+    display: block;
+    text-align: center;
+  }
+  #setup {
+    border-bottom: 1px solid #555;
+    margin: 0px 50px 5px 50px;    
+    padding-bottom: 15px;
+    font-size: 1.5rem;
+  }
+  #tags {    
+    margin-top: 25px;    
+    font-size: 1.5rem;
+  }
+  #tags:before {    
+    content: 'Tags';
+    display: block;
+    border-top: 1px solid #555;
+    margin: 0 50px;    
+  }
+  #tags label {
+    display: inline-block;
+    vertical-align: middle;
+  }
+  .hideAnswer input.answer {
+    color: transparent;
+  }  
+  .hideAnswer #bnNext {
+    visibility: hidden;
+  }
+</style>
+<body>
+  <div id="main">
+    <div id="con">
+      <h3>My Dictionary</h3>
+      <div id="help"></div>
+      <div id="setup">        
+        <a href="javascrip:void(0);" id="bnHelp" title="Help section">?</a>
+        <a href="javascrip:void(0);" id="bnLoad" title="Load dictionary from Excel (xlsx) file">Load...</a>
+        <a href="javascrip:void(0);" id="bnInvert" title="Invert order">--</a>
+      </div>
+      <div id="fields">
+        <label>
+          <span id="label1">--</span>
+          <input id="text1" value="" readonly autocomplete="off">
+        </label>
+        <label>
+          <span id="label2">--</span>
+          <input id="text2" value="" readonly autocomplete="off">
+        </label>
+      </div>      
+      <div id="ctrl">
+        <button id="bnCheck">Check</button>
+        <button id="bnNext">Next</button>
+      </div>
+      <div id="tags">--</div>
+    </div>  
+  </div>
+</body>
+<script>
+  
+  const state = {
+    order: 0, // 0 = en->ru, 1 = ru->en    
+    tags: [], // all tags    
+    rows: [], // all cases
+    dict: null, // cases to train
+    next: 0, // pointer to next item
+  };
+
+  // TODO: help section
+
+  const readRows = function(data, defaultTag) {
+    data.forEach(u => {
+      if (u['en'] !== undefined &&
+          u['ru'] !== undefined)
+        {
+          const tag = '' + (u.tag || defaultTag);
+          const tags = [];
+
+          tag.split(',').forEach(s => {
+            s = s.trim().toLowerCase();
+            tags.push(s);
+            if (state.tags.indexOf(s) == -1) {
+              state.tags.push(s);
+            }
+          });
+          
+          state.rows.push({
+            en: u['en'],
+            ru: u['ru'],
+            tags: tags
+          });
+        }
+    });
+  }
+  
+  const readExcelFile = function(file) {
+    const reader = new FileReader();
+
+    reader.onload = function(e) {      
+      const data = e.target.result;      
+      const workbook = XLSX.read(data, {type: 'binary'});
+      
+      state.rows = [];
+      state.tags = [];  
+      
+      workbook.SheetNames.forEach(function(sheetName) {
+        const obj = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);        
+        //const json = JSON.stringify(obj);
+        readRows(obj, sheetName);
+      });
+            
+      state.tags.sort();
+      state.dict = null; // mark as dirty
+
+      buildTags();
+      updateState();
+
+      // TODO: scroll to tags
+    };
+
+    reader.onerror = function(ex) {
+      console.error('excel', ex);
+    };
+
+    reader.readAsBinaryString(file);
+  };
+  
+  const updateState = function() {
+    $('#text1').removeClass('answer');
+    $('#text2').addClass('answer');      
+
+    if (!state.order) {
+      $('#bnInvert').html('EN &#x2942; RU');
+      $('#label1').html('English');
+      $('#label2').html('Russian');      
+    } else {
+      $('#bnInvert').html('RU &#x2942; EN');
+      $('#label1').html('Russian');
+      $('#label2').html('English');      
+    }
+    
+    const x = $('#text1').val();
+    $('#text1').val($('#text2').val());
+    $('#text2').val(x);
+  }
+
+  const buildTags = function() {    
+    const e = $('#tags');
+
+    e.html('<label><input id="cbTagAll" type="checkbox" autocomplete="off"/>All</label>');
+    
+    state.tags.forEach(s => {
+      e.append('<label><input data-value="'+s+'" type="checkbox" autocomplete="off"/>'+s+'</label>');
+    });
+
+    $('#tags input[type="checkbox"]').click(() => state.dict = null);
+    
+    $('#cbTagAll').click(function() {
+      const v = $(this).prop('checked');
+      $('#tags input[type="checkbox"]').prop('checked', v);      
+    });
+
+    setTags(state.tags);
+  }
+
+  const getTags = function() {
+    const list = [];
+    $('#tags input[type="checkbox"][data-value]:checked').each(function() {      
+      list.push($(this).data('value'));
+    })
+    return list;
+  }
+
+  const setTags = function(list) {
+    let cnt = 0;
+    const tagElems = $('#tags input[type="checkbox"][data-value]');
+    
+    tagElems.each(function() {      
+      const e = $(this);
+      const s = e.attr('data-value');      
+      const v = list.indexOf(s) != -1;
+      e.prop('checked', v);
+      cnt += (v ? 1 : 0);
+    });
+
+    $('#cbTagAll').prop('checked', (cnt > 0 && cnt === tagElems.length));
+    state.dict = null; // mark as dirty
+  }
+
+  const shuffle = function (array) {
+    let c = array.length,  i;
+
+    while (c != 0) {
+      i = Math.floor(Math.random() * c--);
+      [array[c], array[i]] = [array[i], array[c]];
+    }
+
+    return array;
+  }
+
+  const updateDict = function() {
+    if (state.dict !== null) return;
+
+    const selTags = getTags();
+
+    state.dict = [];
+
+    state.rows.forEach(r => {
+      const actual = r.tags.filter(value => selTags.includes(value));
+      if (actual.length > 0) {
+        state.dict.push(r);
+      }
+    });
+
+    state.dict = shuffle(state.dict);    
+    state.next = 0;
+  }
+
+  $('#bnLoad').click(function(e) {    
+    const input = document.createElement('input');
+    input.type = 'file';    
+    input.accept = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    input.onchange = e => { 
+      const file = e.target.files[0];       
+      readExcelFile(file);
+    }
+    input.click();
+  });
+
+  $('#bnInvert').click(function() {
+    state.order = !state.order;
+    updateState();
+  });
+
+  $('#bnNext').click(function() {
+    updateDict();
+    
+    if (!state.dict || state.next >= state.dict.length) 
+      return;
+
+    const u = state.dict[state.next];
+    state.next = (state.next + 1) % state.dict.length;
+    $('#text1').val(state.order ? u.ru : u.en);
+    $('#text2').val(state.order ? u.en : u.ru);
+    $('#con').addClass('hideAnswer');
+  });
+
+  $('#bnCheck').click(function() {
+    $('#con').removeClass('hideAnswer');
+  });  
+
+  updateState();
+  
+</script>
+</html>
