@@ -85,20 +85,39 @@
   }
   #tags {    
     margin-top: 25px;    
-    font-size: 1.5rem;
-    border-top: 1px solid #555;
+    font-size: 1.5rem;    
   }
-  /*
   #tags:before {    
-    content: 'Tags';
+    content: '';
     display: block;
     border-top: 1px solid #555;
-    margin: 0 50px;    
-  }*/
+    height: 1px;
+    margin: 0 50px;
+  }  
   #tags label {
     display: inline-block;
     vertical-align: middle;
     
+  }
+  #help {
+    font-size: 1.32rem;    
+    margin-top: 25px;        
+    padding: 5px 8px;        
+    text-align: justify;
+  }
+  #help:before {    
+    content: '';
+    display: block;
+    border-top: 1px solid #555;
+    height: 1px;
+    margin: 0 50px;
+  }  
+  #help b {
+    color: white;
+  }
+  #help a {
+    margin: 0;
+    color: lightblue;
   }
   .hideAnswer input.answer {
     color: transparent;
@@ -110,10 +129,9 @@
 <body>
   <div id="main">
     <div id="con">
-      <h3>My Dictionary</h3>
-      <div id="help"></div>
+      <h3>My Dictionary</h3>      
       <div id="setup">        
-        <a href="javascrip:void(0);" id="bnHelp" title="Help section">?</a>
+        <a href="javascrip:void(0);" id="bnHelp" title="Help section" class="scroll-help">?</a>
         <a href="javascrip:void(0);" id="bnLoad" title="Load dictionary from Excel (xlsx) file">Load...</a>
         <a href="javascrip:void(0);" id="bnInvert" title="Invert order">--</a>
       </div>
@@ -132,6 +150,8 @@
         <button id="bnNext">Next</button>
       </div>
       <div id="tags">Tags</div>
+      <div id="help">Для работы с тренажером, необходимо подготовить Excel файл, в котором будут колонки <b>en</b> и <b>ru</b>. Так же, может присутствовать колонка <b>tag</b>, в которой будут перечислены через запятую категории слова. Допустимо размещение слов на разных страницах. При этом, если на странице нет колоники <b>tag</b>, то в качестве тэга будет браться название страницы. В качестве примера оформления Excel файла словаря, можете <a href="dict.xlsx">скачать этот</a>.
+        <div style="text-align: center; margin-top: 8px;"><a href="javascript:void(0);" class="scroll-top">Вернуться к началу</a>.</div></div>
     </div>  
   </div>
 </body>
@@ -144,8 +164,6 @@
     dict: null, // cases to train
     next: 0, // pointer to next item
   };
-
-  // TODO: help section
 
   const readRows = function(data, defaultTag) {
     data.forEach(u => {
@@ -176,29 +194,39 @@
     const reader = new FileReader();
 
     reader.onload = function(e) {      
-      const data = e.target.result;      
-      const workbook = XLSX.read(data, {type: 'binary'});
-      
+      const data = e.target.result;
+
       state.rows = [];
       state.tags = [];  
-      
-      workbook.SheetNames.forEach(function(sheetName) {
-        const obj = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);        
-        //const json = JSON.stringify(obj);
-        readRows(obj, sheetName);
-      });
-            
+
+      try
+      {      
+        const workbook = XLSX.read(data, {type: 'binary'});      
+        workbook.SheetNames.forEach(function(sheetName) {
+          const obj = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
+          readRows(obj, sheetName);
+        });            
+      }
+      catch(err)
+      {
+        alert('Ошибка обработки Excel файла');
+        console.error('excel', err);
+      }
+
       state.tags.sort();
       state.dict = null; // mark as dirty
 
       buildTags();
       updateState();
 
-      // TODO: scroll to tags
+      $([document.documentElement, document.body]).animate({
+        scrollTop: $("#tags").offset().top
+      }, 800);
     };
 
     reader.onerror = function(ex) {
-      console.error('excel', ex);
+      alert('Ошибка чтения файла');
+      console.error('FileReader', ex);
     };
 
     reader.readAsBinaryString(file);
@@ -298,7 +326,7 @@
   $('#bnLoad').click(function(e) {    
     const input = document.createElement('input');
     input.type = 'file';    
-    input.accept = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    input.accept = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'; // xlsx
     input.onchange = e => { 
       const file = e.target.files[0];       
       readExcelFile(file);
@@ -327,6 +355,18 @@
   $('#bnCheck').click(function() {
     $('#con').removeClass('hideAnswer');
   });  
+
+  $('a.scroll-top').click(function() {
+    $([document.documentElement, document.body]).animate({
+        scrollTop: $("#con").offset().top
+    }, 800);
+  });
+
+  $('a.scroll-help').click(function() {
+    $([document.documentElement, document.body]).animate({
+        scrollTop: $("#help").offset().top
+    }, 800);
+  });
 
   updateState();
   
