@@ -42,7 +42,7 @@
   }
   label span {
     display: inline-block;
-    width: 200px;    
+    width: 120px;    
     text-align: left;
   }
   a {
@@ -67,7 +67,7 @@
     text-align: center;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    /*justify-content: center;*/
     flex: 1;
   }  
   #fields {
@@ -79,51 +79,79 @@
   }
   #setup {
     border-bottom: 1px solid #555;
-    margin: 0px 50px 5px 50px;    
+    margin: 0px 20px 5px 20px;
     padding-bottom: 15px;
-    font-size: 1.5rem;
+    font-size: 1.32rem;
   }
   #tags {    
-    margin-top: 25px;    
-    font-size: 1.5rem;    
+    margin-top: 15px;    
+    font-size: 1.32rem;    
   }
   #tags:before {    
     content: '';
     display: block;
     border-top: 1px solid #555;
     height: 1px;
-    margin: 0 50px;
+    margin: 0 20px;
   }  
   #tags label {
     display: inline-block;
     vertical-align: middle;
-    
+    margin: 4px 7px;
   }
   #help {
-    font-size: 1.32rem;    
-    margin-top: 25px;        
+    font-size: 1.32rem;        
     padding: 5px 8px;        
-    text-align: justify;
+    text-align: justify;    
   }
   #help:before {    
     content: '';
     display: block;
     border-top: 1px solid #555;
     height: 1px;
-    margin: 0 50px;
+    margin: 0 12px;
   }  
   #help b {
     color: white;
   }
   #help a {
     margin: 0;
-    color: lightblue;
+    color: yellow;
+  }
+  #using {
+    color: #025;
+    background-color: #797;
+    padding: 5px 8px;
+    margin: 15px;
+    border-radius: 5px;
+    display: none;
+    position: relative;
+    overflow: hidden;
+  }
+  #using:after {
+    content: '';
+    display: block;
+    width: 50px;
+    height: 50px;
+    position: absolute;
+    background-image: url('pc/quote.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    left: 5px;
+    top: 2px;
+    opacity: 0.1;
   }
   .hideAnswer input.answer {
     color: transparent;
   }  
   .hideAnswer #bnNext {
     visibility: hidden;
+  }  
+  .hasUsing #using {
+    display: block;
+  }
+  .hasUsing.hideAnswer #using {
+    display: none;
   }
 </style>
 <body>
@@ -149,9 +177,14 @@
         <button id="bnCheck">Check</button>
         <button id="bnNext">Next</button>
       </div>
+      <div id="using"></div>
       <div id="tags">Tags</div>
-      <div id="help">Для работы с тренажером, необходимо подготовить Excel файл, в котором будут колонки <b>en</b> и <b>ru</b>. Так же, может присутствовать колонка <b>tag</b>, в которой будут перечислены через запятую категории слова. Допустимо размещение слов на разных страницах. При этом, если на странице нет колоники <b>tag</b>, то в качестве тэга будет браться название страницы. В качестве примера оформления Excel файла словаря, можете <a href="dict.xlsx">скачать этот</a>.
-        <div style="text-align: center; margin-top: 8px;"><a href="javascript:void(0);" class="scroll-top">Вернуться к началу</a>.</div></div>
+      <div id="help">
+        <p>Для работы с тренажером, необходимо подготовить Excel файл, в котором будут колонки <b>en</b> и <b>ru</b>. Так же, может присутствовать колонка <b>tag</b>, в которой будут перечислены через запятую категории слова.</p> 
+        <p>Ещё одна полезная, но необязательная колонка <b>using</b>. В ней можно разместить примеры использования слова в фразах.</p>
+        <p>Допустимо размещение слов на разных страницах. При этом, если на странице нет колоники <b>tag</b>, то в качестве тэга будет браться название страницы.</p>
+        <p>В качестве примера оформления Excel файла словаря, можете <a href="dict.xlsx">скачать этот</a>.</p>
+        <div style="text-align: center; margin-top: 20px;"><a href="javascript:void(0);" class="scroll-top">Вернуться к началу</a></div></div>
     </div>  
   </div>
 </body>
@@ -180,11 +213,14 @@
               state.tags.push(s);
             }
           });
+
+          const using = (u.using || '').trim();
           
           state.rows.push({
             en: u['en'],
             ru: u['ru'],
-            tags: tags
+            using: using,
+            tags: tags,            
           });
         }
     });
@@ -208,9 +244,9 @@
         });            
       }
       catch(err)
-      {
-        alert('Ошибка обработки Excel файла');
+      {        
         console.error('excel', err);
+        alert('Ошибка обработки Excel файла');
       }
 
       state.tags.sort();
@@ -219,14 +255,18 @@
       buildTags();
       updateState();
 
+      $('#bnNext').trigger('click');
+      
+/*
       $([document.documentElement, document.body]).animate({
         scrollTop: $("#tags").offset().top
       }, 800);
+      */
     };
 
     reader.onerror = function(ex) {
-      alert('Ошибка чтения файла');
       console.error('FileReader', ex);
+      alert('Ошибка чтения файла');      
     };
 
     reader.readAsBinaryString(file);
@@ -346,10 +386,19 @@
       return;
 
     const u = state.dict[state.next];
+    
     state.next = (state.next + 1) % state.dict.length;
-    $('#text1').val(state.order ? u.ru : u.en);
-    $('#text2').val(state.order ? u.en : u.ru);
+    
     $('#con').addClass('hideAnswer');
+    $('#text1').val(state.order ? u.ru : u.en);
+    $('#text2').val(state.order ? u.en : u.ru);    
+    $('#using').html(u.using);    
+
+    if (u.using) {
+      $('#con').addClass('hasUsing');
+    } else {
+      $('#con').removeClass('hasUsing');
+    }
   });
 
   $('#bnCheck').click(function() {
@@ -358,7 +407,7 @@
 
   $('a.scroll-top').click(function() {
     $([document.documentElement, document.body]).animate({
-        scrollTop: $("#con").offset().top
+        scrollTop: $("body").offset().top
     }, 800);
   });
 
