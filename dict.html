@@ -161,9 +161,9 @@
     <div id="con">
       <h3 id="title">My Dictionary</h3>      
       <div id="setup">        
-        <a href="javascrip:void(0);" id="bnHelp" title="Help section" class="scroll-help">?</a>
-        <a href="javascrip:void(0);" id="bnLoad" title="Load dictionary from Excel (xlsx) file">Load...</a>
-        <a href="javascrip:void(0);" id="bnInvert" title="Invert order">--</a>
+        <a href="javascript:void(0);" id="bnHelp" title="Help section" class="scroll-help">?</a>
+        <a href="javascript:void(0);" id="bnLoad" title="Load a dictionary from Excel (xlsx) file">Load</a>
+        <a href="javascript:void(0);" id="bnInvert" title="Invert order">--</a>
       </div>
       <div id="fields">                  
         <input id="text1" readonly autocomplete="off">
@@ -176,304 +176,334 @@
       <div id="using"></div>
       <div id="tags">Tags</div>
       <div id="help">
-        <p>Для работы с тренажером, необходимо подготовить Excel файл, в котором будут колонки <b>en</b> и <b>ru</b>. Так же, может присутствовать колонка <b>tag</b>, в которой будут перечислены через запятую категории слова.</p> 
-        <p>Ещё одна полезная, но необязательная колонка <b>using</b>. В ней можно разместить примеры использования слова в фразах.</p>
-        <p>Допустимо размещение слов на разных страницах. При этом, если на странице нет колоники <b>tag</b>, то в качестве тэга будет браться название страницы.</p>
-        <p>В качестве примера оформления Excel файла словаря, можете <a href="dict.xlsx">скачать этот</a>.</p>
+        <p>Для работы с тренажером, необходимо подготовить Excel файл (<a href="dict.xlsx">пример</a>), в котором будут колонки <b>en</b> и <b>ru</b>. Так же, может присутствовать колонка <b>tag</b>, в которой будут перечислены через запятую категории слова. Допустимо размещение слов на разных страницах.</p> 
+        <p>Ещё одна полезная, но необязательная колонка <b>using</b>. В ней можно разместить примеры использования слова в фразах.</p>        
+        <p>Клавиша пробел (space) дублирует нажатие мышкой по кнопкам Check и Next.</p>
         <div style="text-align: center; margin-top: 20px;"><a href="javascript:void(0);" class="scroll-top">Вернуться к началу</a></div></div>
     </div>  
   </div>
 </body>
 <script>
-  
-  const state = {
-    order: 0, // 0 = en->ru, 1 = ru->en    
-    tags: [], // all tags    
-    rows: [], // all cases
-    dict: null, // cases to train
-    next: 0, // pointer to next item
-  };
 
-  window.__dictState = state; // debug
-
-  const readRows = function(data, defaultTag) {
-    data.forEach(u => {
-      if (u['en'] !== undefined &&
-          u['ru'] !== undefined)
-        {
-          const tag = '' + (u.tag || defaultTag);
-          const tags = [];
-
-          tag.split(',').forEach(s => {
-            s = s.trim().toLowerCase();
-            tags.push(s);
-            if (state.tags.indexOf(s) == -1) {
-              state.tags.push(s);
-            }
-          });
-
-          const using = (u.using || '').trim();
-          
-          state.rows.push({
-            en: u['en'],
-            ru: u['ru'],
-            using: using,
-            tags: tags,            
-          });
-        }
-    });
-  };
-
-  const onDataToLoad = function(e) {
-    const isFromStorage = !!e.store;
-    const data = e.store || e.target.result;
-
-    state.rows = [];
-    state.tags = [];  
-
-    try
-    {      
-      if (isFromStorage) {
-        data.sheetNames.forEach(sheetName => 
-          readRows(data.sheets[sheetName], sheetName));
-      } else {
-        const workbook = XLSX.read(data, {type: 'binary'});
-
-        const store = {
-          file: state.fileName,
-          sheetNames: workbook.SheetNames,
-          sheets: {}
-        };
-
-        workbook.SheetNames.forEach((sheetName) => {
-          const obj = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
-          store.sheets[sheetName] = obj;
-          readRows(obj, sheetName);          
-        });            
-
-        if (state.rows.length > 0) {
-          storageWrite(store); // save
-        } else {
-          storageWrite(false); // clear
-        }
-      }
-    }
-    catch(err)
-    {        
-      console.error('excel', err);
-      alert('Ошибка обработки Excel файла');
-    }
-
-    state.tags.sort();
-    state.dict = null; // mark as dirty
-
-    buildTags();
-    updateState();
-
-    $('#bnNext').trigger('click');
-    $('#title').text('File: ' + state.fileName);
-  };
-  
-  const readExcelFile = function(file) { 
-    const reader = new FileReader();
+  $(document).ready(function() { 
     
-    state.fileName = file.name;
-
-    reader.onload = onDataToLoad;
-
-    reader.onerror = function(ex) {
-      console.error('FileReader', ex);
-      alert('Ошибка чтения файла');      
+    if (window.XLSX === undefined) {
+      alert('Библиотека XLSX отсутствует');
+      return;
+    }
+  
+    const state = {
+      order: 0, // 0 = en->ru, 1 = ru->en    
+      tags: [], // all tags    
+      rows: [], // all cases
+      dict: null, // cases to train
+      next: 0, // pointer to next item
     };
 
-    reader.readAsBinaryString(file);
-  };
+    window.__dictState = state; // debug
 
-  const tryToLoadFromStorage = function() {
-    const store = storageRead();
-    if (!store || !store.file) return false;
-    state.fileName = store.file;    
-    onDataToLoad({store:store});
-    return true;
-  };
+    const readRows = function(data, defaultTag) {
+      data.forEach(u => {
+        if (u['en'] !== undefined &&
+            u['ru'] !== undefined)
+          {
+            const tag = defaultTag + ',' + (u.tag || '');
+            const tags = [];
 
-  const storageWrite = function(data) {
-    if (window.localStorage === undefined) return false;
-    try {
-      if (!data) {
-        window.localStorage.removeItem('dict');
-      } else {      
-        window.localStorage.setItem('dict', JSON.stringify(data));
+            tag.split(',').forEach(s => {
+              s = s.trim().toLowerCase();
+              if (s.length < 1) return;
+              if (tags.indexOf(s) != -1) return;
+              tags.push(s);
+              if (state.tags.indexOf(s) == -1) {
+                state.tags.push(s);
+              }
+            });
+
+            const using = (u.using || '')
+              .trim()         
+              .replace(/[\r\n]+/g, '<br>');
+            
+            state.rows.push({
+              en: u['en'],
+              ru: u['ru'],
+              using: using,
+              tags: tags,            
+            });
+          }
+      });
+    };
+
+    const onDataToLoad = function(e) {
+      const isFromStorage = !!e.store;
+      const data = e.store || e.target.result;
+
+      state.rows = [];
+      state.tags = [];  
+
+      try
+      {      
+        if (isFromStorage) {
+          data.sheetNames.forEach(sheetName => 
+            readRows(data.sheets[sheetName], sheetName));
+        } else {
+          const workbook = XLSX.read(data, {type: 'binary'});
+
+          const store = {
+            file: state.fileName,
+            sheetNames: workbook.SheetNames,
+            sheets: {}
+          };
+
+          workbook.SheetNames.forEach((sheetName) => {
+            const obj = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
+            store.sheets[sheetName] = obj;
+            readRows(obj, sheetName);          
+          });            
+
+          if (state.rows.length > 0) {
+            storageWrite(store); // save
+          } else {
+            storageWrite(false); // clear
+          }
+        }
       }
-      return true;
-    } catch(err) {
-      conosle.error('storageWrite', err);
-      return false;
-    }
-  };
-
-  const storageRead = function() {
-    if (window.localStorage === undefined) return false;
-    try {
-      const data = window.localStorage.getItem('dict');
-      return data ? JSON.parse(data) : false;
-    } catch(err) {
-      conosle.error('storageRead', err);
-      return false;
-    }
-  };
-  
-  const updateState = function() {
-    $('#text1').removeClass('answer');
-    $('#text2').addClass('answer');      
-
-    if (!state.order) {
-      $('#bnInvert').html('EN &#x2942; RU');      
-      $('#text1').prop('placeholder', 'English');
-      $('#text2').prop('placeholder', 'Russian');
-    } else {
-      $('#bnInvert').html('RU &#x2942; EN');      
-      $('#text1').prop('placeholder', 'Russian');
-      $('#text2').prop('placeholder', 'English');      
-    }
-  };
-
-  const buildTags = function() {    
-    const e = $('#tags');
-
-    e.html('<label><input id="cbTagAll" type="checkbox" autocomplete="off"/>All</label>');
-    
-    state.tags.forEach(s => {
-      e.append('<label><input data-value="'+s+'" type="checkbox" autocomplete="off"/>'+s+'</label>');
-    });
-
-    $('#tags input[type="checkbox"]').click(() => state.dict = null);
-    
-    $('#cbTagAll').click(function() {
-      const v = $(this).prop('checked');
-      $('#tags input[type="checkbox"]').prop('checked', v);      
-    });
-
-    setTags(state.tags);
-  };
-
-  const getTags = function() {
-    const list = [];
-    $('#tags input[type="checkbox"][data-value]:checked').each(function() {      
-      list.push($(this).data('value'));
-    })
-    return list;
-  };
-
-  const setTags = function(list) {
-    let cnt = 0;
-    const tagElems = $('#tags input[type="checkbox"][data-value]');
-    
-    tagElems.each(function() {      
-      const e = $(this);
-      const s = e.attr('data-value');      
-      const v = list.indexOf(s) != -1;
-      e.prop('checked', v);
-      cnt += (v ? 1 : 0);
-    });
-
-    $('#cbTagAll').prop('checked', (cnt > 0 && cnt === tagElems.length));
-    state.dict = null; // mark as dirty
-  };
-
-  const shuffle = function (array) {
-    let c = array.length,  i;
-
-    while (c != 0) {
-      i = Math.floor(Math.random() * c--);
-      [array[c], array[i]] = [array[i], array[c]];
-    }
-
-    return array;
-  };
-
-  const updateDict = function() {
-    if (state.dict !== null) return;
-
-    const selTags = getTags();
-
-    state.dict = [];
-
-    state.rows.forEach(r => {
-      const actual = r.tags.filter(value => selTags.includes(value));
-      if (actual.length > 0) {
-        state.dict.push(r);
+      catch(err)
+      {        
+        console.error('excel', err);
+        alert('Ошибка обработки Excel файла');
       }
-    });
 
-    state.dict = shuffle(state.dict);    
-    state.next = 0;
-  };
+      state.tags.sort();
+      state.dict = null; // mark as dirty
 
-  $('#bnLoad').click(function(e) {    
-    const input = document.createElement('input');
-    input.type = 'file';    
-    input.accept = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'; // xlsx
-    input.onchange = e => { 
-      const file = e.target.files[0];       
-      readExcelFile(file);
-    }
-    input.click();
-  });
+      buildTags();
+      updateState();
 
-  $('#bnInvert').click(function() {
-    state.order = !state.order;
+      $('#bnNext').trigger('click');
+      $('#title').text('File: ' + state.fileName);
+    };
+    
+    const readExcelFile = function(file) { 
+      const reader = new FileReader();
       
+      state.fileName = file.name;
+
+      reader.onload = onDataToLoad;
+
+      reader.onerror = function(ex) {
+        console.error('FileReader', ex);
+        alert('Ошибка чтения файла');      
+      };
+
+      reader.readAsBinaryString(file);
+    };
+
+    const tryToLoadFromStorage = function() {
+      const store = storageRead();
+      if (!store || !store.file) return false;
+      state.fileName = store.file;    
+      onDataToLoad({store:store});
+      return true;
+    };
+
+    const storageWrite = function(data) {
+      if (window.localStorage === undefined) return false;
+      try {
+        if (!data) {
+          window.localStorage.removeItem('dict');
+        } else {      
+          const str = JSON.stringify(data);
+          window.localStorage.setItem('dict', str);
+          console.debug('storageWrite', 'data length', str.length);
+        }
+        return true;
+      } catch(err) {
+        conosle.error('storageWrite', err);
+        return false;
+      }
+    };
+
+    const storageRead = function() {
+      if (window.localStorage === undefined) return false;
+      try {
+        const data = window.localStorage.getItem('dict');
+        console.debug('storageRead', 'data length', data ? data.length : 'null');
+        return data ? JSON.parse(data) : false;
+      } catch(err) {
+        conosle.error('storageRead', err);
+        return false;
+      }
+    };
+    
+    const updateState = function() {
+      $('#text1').removeClass('answer');
+      $('#text2').addClass('answer');      
+
+      if (!state.order) {
+        $('#bnInvert').html('EN &#x2942; RU');      
+        $('#text1').prop('placeholder', 'English');
+        $('#text2').prop('placeholder', 'Russian');
+      } else {
+        $('#bnInvert').html('RU &#x2942; EN');      
+        $('#text1').prop('placeholder', 'Russian');
+        $('#text2').prop('placeholder', 'English');      
+      }
+    };
+
+    const buildTags = function() {    
+      const e = $('#tags');
+
+      e.html('<label><input id="cbTagAll" type="checkbox" autocomplete="off"/>All</label>');
+      
+      state.tags.forEach(s => {
+        e.append('<label><input data-value="'+s+'" type="checkbox" autocomplete="off"/>'+s+'</label>');
+      });
+
+      $('#tags input[type="checkbox"]').click(() => state.dict = null);
+      
+      $('#cbTagAll').click(function() {
+        const v = $(this).prop('checked');
+        $('#tags input[type="checkbox"]').prop('checked', v);      
+      });
+
+      setTags(state.tags);
+    };
+
+    const getTags = function() {
+      const list = [];
+      $('#tags input[type="checkbox"][data-value]:checked').each(function() {      
+        list.push($(this).data('value'));
+      })
+      return list;
+    };
+
+    const setTags = function(list) {
+      let cnt = 0;
+      const tagElems = $('#tags input[type="checkbox"][data-value]');
+      
+      tagElems.each(function() {      
+        const e = $(this);
+        const s = e.attr('data-value');      
+        const v = list.indexOf(s) != -1;
+        e.prop('checked', v);
+        cnt += (v ? 1 : 0);
+      });
+
+      $('#cbTagAll').prop('checked', (cnt > 0 && cnt === tagElems.length));
+      state.dict = null; // mark as dirty
+    };
+
+    const shuffle = function (array) {
+      let c = array.length,  i;
+
+      while (c != 0) {
+        i = Math.floor(Math.random() * c--);
+        [array[c], array[i]] = [array[i], array[c]];
+      }
+
+      return array;
+    };
+
+    const updateDict = function() {
+      if (state.dict !== null) return;
+
+      const selTags = getTags();
+
+      state.dict = [];
+
+      state.rows.forEach(r => {
+        const actual = r.tags.filter(value => selTags.includes(value));
+        if (actual.length > 0) {
+          state.dict.push(r);
+        }
+      });
+
+      state.dict = shuffle(state.dict);    
+      state.next = 0;
+
+      console.debug('dict size', state.dict.length);
+    };
+
+    $('#bnLoad').click(function(e) {    
+      const input = document.createElement('input');
+      input.type = 'file';    
+      input.accept = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'; // xlsx
+      input.onchange = e => { 
+        const file = e.target.files[0];       
+        readExcelFile(file);
+      }
+      input.click();
+    });
+
+    $('#bnInvert').click(function() {
+      state.order = !state.order;
+        
+      updateState();
+      
+      const x = $('#text1').val();
+      $('#text1').val($('#text2').val());
+      $('#text2').val(x);
+    });
+
+    $('#bnNext').click(function() {
+      updateDict();
+      
+      if (!state.dict || state.next >= state.dict.length) 
+        return;
+
+      const u = state.dict[state.next];
+      
+      state.next = (state.next + 1) % state.dict.length;
+      
+      $('#con').addClass('hideAnswer');
+      $('#text1').val(state.order ? u.ru : u.en);
+      $('#text2').val(state.order ? u.en : u.ru);    
+      $('#using').html(u.using);    
+
+      if (u.using) {
+        $('#con').addClass('hasUsing');
+      } else {
+        $('#con').removeClass('hasUsing');
+      }
+
+      $('#text1').focus();
+    });
+
+    $('#bnCheck').click(function() {
+      $('#con').removeClass('hideAnswer');
+      $('#text1').focus();
+    });  
+
+    $('a.scroll-top').click(function() {
+      $([document.documentElement, document.body]).animate({
+          scrollTop: $("body").offset().top
+      }, 800);
+    });
+
+    $('a.scroll-help').click(function() {
+      $([document.documentElement, document.body]).animate({
+          scrollTop: $("#help").offset().top
+      }, 800);
+    });
+
+    $('body').keyup(function(e){   
+      if (e.keyCode == 32) {
+        if ($('#con').hasClass('hideAnswer')) {
+          $('#bnCheck').trigger('click');
+        } else {      
+          $('#bnNext').trigger('click');
+        }
+      }
+    });
+
     updateState();
-    
-    const x = $('#text1').val();
-    $('#text1').val($('#text2').val());
-    $('#text2').val(x);
-  });
 
-  $('#bnNext').click(function() {
-    updateDict();
-    
-    if (!state.dict || state.next >= state.dict.length) 
-      return;
-
-    const u = state.dict[state.next];
-    
-    state.next = (state.next + 1) % state.dict.length;
-    
-    $('#con').addClass('hideAnswer');
-    $('#text1').val(state.order ? u.ru : u.en);
-    $('#text2').val(state.order ? u.en : u.ru);    
-    $('#using').html(u.using);    
-
-    if (u.using) {
-      $('#con').addClass('hasUsing');
-    } else {
-      $('#con').removeClass('hasUsing');
+    if (document.location.href.indexOf('ignoreStorage=') == -1) {
+      tryToLoadFromStorage();
     }
+
   });
-
-  $('#bnCheck').click(function() {
-    $('#con').removeClass('hideAnswer');
-  });  
-
-  $('a.scroll-top').click(function() {
-    $([document.documentElement, document.body]).animate({
-        scrollTop: $("body").offset().top
-    }, 800);
-  });
-
-  $('a.scroll-help').click(function() {
-    $([document.documentElement, document.body]).animate({
-        scrollTop: $("#help").offset().top
-    }, 800);
-  });
-
-  updateState();
-
-  if (document.location.href.indexOf('ignoreStorage=') == -1) {
-    tryToLoadFromStorage();
-  }
   
 </script>
 </html>
