@@ -30,6 +30,7 @@
   input {
     background-color: #999;
     font-size: 2.0rem;
+    margin: 5px 0;
   }
   input[type="checkbox"] {
     min-width: 1.0rem;
@@ -157,21 +158,15 @@
 <body>
   <div id="main">
     <div id="con">
-      <h3>My Dictionary</h3>      
+      <h3 id="title">My Dictionary</h3>      
       <div id="setup">        
         <a href="javascrip:void(0);" id="bnHelp" title="Help section" class="scroll-help">?</a>
         <a href="javascrip:void(0);" id="bnLoad" title="Load dictionary from Excel (xlsx) file">Load...</a>
         <a href="javascrip:void(0);" id="bnInvert" title="Invert order">--</a>
       </div>
-      <div id="fields">
-        <label>
-          <span id="label1">--</span>
-          <input id="text1" value="" readonly autocomplete="off">
-        </label>
-        <label>
-          <span id="label2">--</span>
-          <input id="text2" value="" readonly autocomplete="off">
-        </label>
+      <div id="fields">                  
+        <input id="text1" readonly autocomplete="off">
+        <input id="text2" readonly autocomplete="off">
       </div>      
       <div id="ctrl">
         <button id="bnCheck">Check</button>
@@ -197,6 +192,8 @@
     dict: null, // cases to train
     next: 0, // pointer to next item
   };
+
+  window.__dictState = state; // debug
 
   const readRows = function(data, defaultTag) {
     data.forEach(u => {
@@ -224,45 +221,64 @@
           });
         }
     });
-  }
-  
-  const readExcelFile = function(file) {
-    const reader = new FileReader();
+  };
 
-    reader.onload = function(e) {      
-      const data = e.target.result;
+  const onDataToLoad = function(e) {
+    const isFromStorage = !!e.store;
+    const data = e.store || e.target.result;
 
-      state.rows = [];
-      state.tags = [];  
+    state.rows = [];
+    state.tags = [];  
 
-      try
-      {      
-        const workbook = XLSX.read(data, {type: 'binary'});      
-        workbook.SheetNames.forEach(function(sheetName) {
+    try
+    {      
+      if (isFromStorage) {
+        data.sheetNames.forEach(sheetName => 
+          readRows(data.sheets[sheetName], sheetName));
+      } else {
+        const workbook = XLSX.read(data, {type: 'binary'});
+
+        const store = {
+          file: state.fileName,
+          sheetNames: workbook.SheetNames,
+          sheets: {}
+        };
+
+        workbook.SheetNames.forEach((sheetName) => {
           const obj = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
-          readRows(obj, sheetName);
+          store.sheets[sheetName] = obj;
+          readRows(obj, sheetName);          
         });            
+
+        if (state.rows.length > 0) {
+          storageWrite(store); // save
+        } else {
+          storageWrite(false); // clear
+        }
       }
-      catch(err)
-      {        
-        console.error('excel', err);
-        alert('Ошибка обработки Excel файла');
-      }
+    }
+    catch(err)
+    {        
+      console.error('excel', err);
+      alert('Ошибка обработки Excel файла');
+    }
 
-      state.tags.sort();
-      state.dict = null; // mark as dirty
+    state.tags.sort();
+    state.dict = null; // mark as dirty
 
-      buildTags();
-      updateState();
+    buildTags();
+    updateState();
 
-      $('#bnNext').trigger('click');
-      
-/*
-      $([document.documentElement, document.body]).animate({
-        scrollTop: $("#tags").offset().top
-      }, 800);
-      */
-    };
+    $('#bnNext').trigger('click');
+    $('#title').text('File: ' + state.fileName);
+  };
+  
+  const readExcelFile = function(file) { 
+    const reader = new FileReader();
+    
+    state.fileName = file.name;
+
+    reader.onload = onDataToLoad;
 
     reader.onerror = function(ex) {
       console.error('FileReader', ex);
@@ -271,25 +287,55 @@
 
     reader.readAsBinaryString(file);
   };
+
+  const tryToLoadFromStorage = function() {
+    const store = storageRead();
+    if (!store || !store.file) return false;
+    state.fileName = store.file;    
+    onDataToLoad({store:store});
+    return true;
+  };
+
+  const storageWrite = function(data) {
+    if (window.localStorage === undefined) return false;
+    try {
+      if (!data) {
+        window.localStorage.removeItem('dict');
+      } else {      
+        window.localStorage.setItem('dict', JSON.stringify(data));
+      }
+      return true;
+    } catch(err) {
+      conosle.error('storageWrite', err);
+      return false;
+    }
+  };
+
+  const storageRead = function() {
+    if (window.localStorage === undefined) return false;
+    try {
+      const data = window.localStorage.getItem('dict');
+      return data ? JSON.parse(data) : false;
+    } catch(err) {
+      conosle.error('storageRead', err);
+      return false;
+    }
+  };
   
   const updateState = function() {
     $('#text1').removeClass('answer');
     $('#text2').addClass('answer');      
 
     if (!state.order) {
-      $('#bnInvert').html('EN &#x2942; RU');
-      $('#label1').html('English');
-      $('#label2').html('Russian');      
+      $('#bnInvert').html('EN &#x2942; RU');      
+      $('#text1').prop('placeholder', 'English');
+      $('#text2').prop('placeholder', 'Russian');
     } else {
-      $('#bnInvert').html('RU &#x2942; EN');
-      $('#label1').html('Russian');
-      $('#label2').html('English');      
+      $('#bnInvert').html('RU &#x2942; EN');      
+      $('#text1').prop('placeholder', 'Russian');
+      $('#text2').prop('placeholder', 'English');      
     }
-    
-    const x = $('#text1').val();
-    $('#text1').val($('#text2').val());
-    $('#text2').val(x);
-  }
+  };
 
   const buildTags = function() {    
     const e = $('#tags');
@@ -308,7 +354,7 @@
     });
 
     setTags(state.tags);
-  }
+  };
 
   const getTags = function() {
     const list = [];
@@ -316,7 +362,7 @@
       list.push($(this).data('value'));
     })
     return list;
-  }
+  };
 
   const setTags = function(list) {
     let cnt = 0;
@@ -332,7 +378,7 @@
 
     $('#cbTagAll').prop('checked', (cnt > 0 && cnt === tagElems.length));
     state.dict = null; // mark as dirty
-  }
+  };
 
   const shuffle = function (array) {
     let c = array.length,  i;
@@ -343,7 +389,7 @@
     }
 
     return array;
-  }
+  };
 
   const updateDict = function() {
     if (state.dict !== null) return;
@@ -361,7 +407,7 @@
 
     state.dict = shuffle(state.dict);    
     state.next = 0;
-  }
+  };
 
   $('#bnLoad').click(function(e) {    
     const input = document.createElement('input');
@@ -376,7 +422,12 @@
 
   $('#bnInvert').click(function() {
     state.order = !state.order;
+      
     updateState();
+    
+    const x = $('#text1').val();
+    $('#text1').val($('#text2').val());
+    $('#text2').val(x);
   });
 
   $('#bnNext').click(function() {
@@ -418,6 +469,10 @@
   });
 
   updateState();
+
+  if (document.location.href.indexOf('ignoreStorage=') == -1) {
+    tryToLoadFromStorage();
+  }
   
 </script>
 </html>
