@@ -30,6 +30,8 @@
   input {
     background-color: #999;
     font-size: 2.0rem;
+    line-height: 2.0rem;
+    box-sizing: border-box;
     margin: 5px;
   }
   input[type="checkbox"] {
@@ -155,11 +157,17 @@
   .hasUsing.hideAnswer #using {
     display: none;
   }
+  .longText #fields input {
+    font-size: 1.52rem;
+  }
+  .longText2 #fields input {
+    font-size: 1.0rem;
+  }
 </style>
 <body>
   <div id="main">
     <div id="con">
-      <h3 id="title">My Dictionary</h3>      
+      <h5 id="title">My Dictionary</h5>
       <div id="setup">        
         <a href="javascript:void(0);" id="bnHelp" title="Help section" class="scroll-help">?</a>
         <a href="javascript:void(0);" id="bnLoad" title="Load a dictionary from Excel (xlsx) file">Load</a>
@@ -487,11 +495,17 @@
       const u = state.dict[state.next];
       
       state.next = (state.next + 1) % state.dict.length;
-      
+
+      const maxLen = Math.max(u.ru.length, u.en.length);
+      $('#con').removeClass('longText');
+      $('#con').removeClass('longText2');
+      if (maxLen > 38) $('#con').addClass('longText2');
+      else if (maxLen > 18) $('#con').addClass('longText');
+            
       $('#con').addClass('hideAnswer');
       $('#text1').val(state.order ? u.ru : u.en);
       $('#text2').val(state.order ? u.en : u.ru);    
-      $('#using').html(u.using);    
+      $('#using').html(u.using);
 
       if (u.using) {
         $('#con').addClass('hasUsing');
