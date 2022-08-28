@@ -176,7 +176,7 @@
       <div id="using"></div>
       <div id="tags">Tags</div>
       <div id="help">
-        <p>Для работы с тренажером, необходимо подготовить Excel файл (<a href="dict.xlsx">пример</a>), в котором будут колонки <b>en</b> и <b>ru</b>. Так же, может присутствовать колонка <b>tag</b>, в которой будут перечислены через запятую категории слова. Допустимо размещение слов на разных страницах.</p> 
+        <p>Для работы с тренажером, необходимо подготовить Excel файл (<a href="dict.xlsx">пример</a>), в котором будут колонки <b>en</b> и <b>ru</b>. Так же, может присутствовать колонка <b>tag</b>, в которой будут перечислены через запятую категории слова. Допустимо размещение слов на разных листах.</p> 
         <p>Ещё одна полезная, но необязательная колонка <b>using</b>. В ней можно разместить примеры использования слова в фразах.</p>        
         <p>Клавиша пробел (space) дублирует нажатие мышкой по кнопкам Check и Next.</p>
         <div style="text-align: center; margin-top: 20px;"><a href="javascript:void(0);" class="scroll-top">Вернуться к началу</a></div></div>
@@ -207,7 +207,7 @@
         if (u['en'] !== undefined &&
             u['ru'] !== undefined)
           {
-            const tag = defaultTag + ',' + (u.tag || '');
+            const tag = '[' + defaultTag + '],' + (u.tag || '');
             const tags = [];
 
             tag.split(',').forEach(s => {
@@ -262,10 +262,12 @@
           });            
 
           if (state.rows.length > 0) {
-            storageWrite(store); // save
+            storageWrite(store, 'dict'); // save
           } else {
-            storageWrite(false); // clear
+            storageWrite(false, 'dict'); // clear
           }
+
+          storageWrite(false, 'tags');
         }
       }
       catch(err)
@@ -300,22 +302,23 @@
     };
 
     const tryToLoadFromStorage = function() {
-      const store = storageRead();
-      if (!store || !store.file) return false;
-      state.fileName = store.file;    
-      onDataToLoad({store:store});
+      const obj = storageRead('dict');
+      if (!obj || !obj.file) return false;
+      state.fileName = obj.file;    
+      onDataToLoad({store:obj});
       return true;
     };
 
-    const storageWrite = function(data) {
+    const storageWrite = function(data, key) {      
       if (window.localStorage === undefined) return false;
       try {
+        if (!key) throw new Error('key is required');
         if (!data) {
-          window.localStorage.removeItem('dict');
+          window.localStorage.removeItem(key);
         } else {      
           const str = JSON.stringify(data);
-          window.localStorage.setItem('dict', str);
-          console.debug('storageWrite', 'data length', str.length);
+          window.localStorage.setItem(key, str);
+          console.debug('storageWrite', key + ' length', str.length);
         }
         return true;
       } catch(err) {
@@ -324,11 +327,12 @@
       }
     };
 
-    const storageRead = function() {
+    const storageRead = function(key) {      
       if (window.localStorage === undefined) return false;
       try {
-        const data = window.localStorage.getItem('dict');
-        console.debug('storageRead', 'data length', data ? data.length : 'null');
+        if (!key) throw new Error('key is required');
+        const data = window.localStorage.getItem(key);
+        console.debug('storageRead', key + ' length', data ? data.length : 'null');
         return data ? JSON.parse(data) : false;
       } catch(err) {
         conosle.error('storageRead', err);
@@ -336,7 +340,7 @@
       }
     };
     
-    const updateState = function() {
+    const updateState = function(reset) {
       $('#text1').removeClass('answer');
       $('#text2').addClass('answer');      
 
@@ -349,7 +353,32 @@
         $('#text1').prop('placeholder', 'Russian');
         $('#text2').prop('placeholder', 'English');      
       }
+
+      if (reset) {
+        $('#text1').val('');
+        $('#text2').val('');
+        $('#con').removeClass('hideAnswer');
+        $('#con').removeClass('hasUsing');
+      }
     };
+
+    let _t1 = null;
+
+    const onTagsChanged = function() {      
+      state.dict = null;            
+      if (_t1) {
+        clearTimeout(_t1);
+        _t1 = null;
+      }      
+      _t1 = setTimeout(function() {        
+        _t1 = null;
+        const tags = getTags()
+        storageWrite(tags, 'tags');        
+        $('#cbTagAll').prop('checked', tags.length === state.tags.length);
+        $('#text1').focus();
+        updateState(true);        
+      },20);
+    }
 
     const buildTags = function() {    
       const e = $('#tags');
@@ -360,14 +389,17 @@
         e.append('<label><input data-value="'+s+'" type="checkbox" autocomplete="off"/>'+s+'</label>');
       });
 
-      $('#tags input[type="checkbox"]').click(() => state.dict = null);
+      $('#tags input[type="checkbox"]').click(function() {
+        onTagsChanged();
+      });
       
       $('#cbTagAll').click(function() {
         const v = $(this).prop('checked');
-        $('#tags input[type="checkbox"]').prop('checked', v);      
+        $('#tags input[type="checkbox"]').prop('checked', v);        
       });
 
-      setTags(state.tags);
+      const savedTags = storageRead('tags');
+      setTags(savedTags || state.tags);
     };
 
     const getTags = function() {
