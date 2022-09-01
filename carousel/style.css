@@ -1,0 +1,100 @@
+/* Carousel styles */
+
+* {
+  box-sizing: border-box;
+}
+html, body {
+  height: 100%;
+  padding: 0;
+  margin: 0;
+}
+body {
+  background-color: rgb(45, 45, 45);
+  color: rgba(220,220,220);  
+}
+button {  
+  cursor: pointer;
+}
+button.active {
+  background-color: rgb(71, 196, 77);
+}
+#main {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 100%;
+}
+#center-wrap {  
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+}
+#center {    
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+}
+#pic {
+  background-color: gray;    
+  min-height: 200px;  
+  margin: 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+#pic img {
+  object-fit: contain;
+  height: 80vh;
+  width: 80vw;
+  display: none;
+}
+#pic img.selected {
+  display: inline;
+}
+#action {
+  margin: 35px;
+  height: 2rem;
+}
+#action button {
+  margin: 5px;  
+  opacity: 0.5;
+}
+#action button:hover,
+#action button.active
+{
+  opacity: 1;
+}
+#prepareWrap {
+  position: absolute;  
+  background-color: black;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;  
+  padding-left: 50vw;
+  padding-top: 50vh;
+}
+#prepare {
+  position: relative;
+  border: 2px solid lightgray;
+  border-radius: 5px;
+  background-color: rgb(85, 21, 21);
+  color: lightgray;
+  font-weight: bold;  
+  width: 320px;
+  height: 200px;
+  text-align: center;
+  padding: 25px;    
+  margin-left: -160px;  
+  margin-top: -100px;  
+}
+#prepare .progressBar {
+  display: none;
+  width: 276px;
+  height: 125px;
+  background-image: url('progress.png');
+  background-size: 276px 125px;
+  background-repeat: no-repeat;
+}

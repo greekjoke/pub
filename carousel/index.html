@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="max-age=3600, must-revalidate" />  
+  <title>Carousel</title>
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="main">
+    <div id="center-wrap">
+      <div id="center">
+        <div id="pic"></div>
+        <div id="action">                      
+          <button data-rate="5">1/5</button>
+          <button data-rate="10">1/10</button>
+          <button data-rate="20">1/20</button>
+          <button data-rate="25">1/25</button>          
+          <button data-rate="50">1/50</button>
+        </div>          
+      </div>
+    </div>    
+  </div>
+  <div id="prepareWrap">
+    <div id="prepare">
+      <div>Loading...</div>
+      <div class="progressBar"></div>
+    </div>
+  </div>
+</body>
+<script>
+  'use strict';
+  
+  $(document).ready(function() {
+
+    /*let ar = [{PLACEHOLDER}];*/
+    
+    let ar = ["photos/001.jpg","photos/002.jpg","photos/003.jpg","photos/004.jpg","photos/005.jpg","photos/006.jpg","photos/007.jpg","photos/008.jpg","photos/009.jpg","photos/010.jpg","photos/011.jpg","photos/012.jpg","photos/013.jpg","photos/014.jpg","photos/015.jpg","photos/016.jpg","photos/017.jpg","photos/018.jpg","photos/019.jpg","photos/020.jpg","photos/021.jpg","photos/201.jpg","photos/202.jpg","photos/203.jpg","photos/205.jpg","photos/206.jpg","photos/207.jpg","photos/208.jpg","photos/209.jpg","photos/sad.jpg"];
+
+    const place = document.getElementById('pic');
+    const numPics = ar.length;
+    let indices = [];    
+    let next = 0;
+    let timer = null;
+
+    const shuffle = function (array) {
+      let c = array.length,  i;
+      while (c != 0) {
+        i = Math.floor(Math.random() * c--);
+        [array[c], array[i]] = [array[i], array[c]];
+      }
+      return array;
+    };
+
+    const loadNextPic = function(list) {
+      if (list.length < 1) {
+        onLoadingSuccess();
+        return;
+      }
+      const x = list.pop();      
+      const img = new Image;
+      img.id = 'pic-' + indices.length;
+      img.onload = function() {        
+        indices.push(indices.length);
+        setProgress(100 * indices.length / numPics);
+        // setTimeout(() => {
+          loadNextPic(list);
+        // },500);
+      };
+      img.src = x;
+      place.append(img);      
+    }
+
+    const loadPics = function() {
+      setProgress(0);
+      loadNextPic(ar);
+    };
+
+    const onLoadingSuccess = function() {
+      setTimeout(function() {
+        $('#prepareWrap').hide();
+      },1500);
+    }  
+
+    const isRun = function() {
+      return (timer != null);
+    }
+
+    let cur = null;
+
+    const stop = function() {
+      if (!timer) return;
+      clearInterval(timer);
+      timer = null;      
+    }
+
+    const start = function(delay) {
+      stop();      
+      timer = setInterval(function() {
+        if (next === 0) { // mix series every cycle
+          indices = shuffle(indices);          
+        }
+        const i = indices[next];
+        const e = $('img#pic-'+i);
+        cur ? cur.removeClass('selected') : false;
+        e.addClass('selected');
+        cur = e;
+        next = (next + 1) % indices.length;        
+      },delay);
+    }
+
+    const ePB = $('#prepare .progressBar');  
+    let pbWidth = null;
+
+    const setProgress = function(pct) {    
+      const f = 0.01 * pct;
+      pbWidth = pbWidth || ePB.width();
+      const newWidth = Math.round(pbWidth * f);          
+      ePB.width(newWidth + 'px');
+      ePB.show();      
+    }
+    
+    const actionButtons = $('button[data-rate]');
+    actionButtons.click(function() {
+      if (isRun()) {
+        actionButtons.removeClass('active');
+        stop();
+      } else {
+        $(this).addClass('active');
+        const r = 1000 / $(this).attr('data-rate');
+        start(r);
+      }
+    });
+
+    loadPics();   
+
+  });
+</script>
+</html>
