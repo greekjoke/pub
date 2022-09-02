@@ -19,6 +19,7 @@
       <div id="center">
         <div id="pic"></div>
         <div id="action">                                
+          <button data-rate="3">1/3</button>
           <button data-rate="5">1/5</button>
           <button data-rate="10">1/10</button>
           <button data-rate="20">1/20</button>
@@ -88,15 +89,6 @@
     let indices = [];    
     let next = 0;
     let timer = null;
-
-    const shuffle = function (array) {
-      let c = array.length,  i;
-      while (c != 0) {
-        i = Math.floor(Math.random() * c--);
-        [array[c], array[i]] = [array[i], array[c]];
-      }
-      return array;
-    };
 
     const loadNextPic = function(list) {
       if (list.length < 1) {
@@ -183,6 +175,7 @@
     }
     
     const actionButtons = $('button[data-rate]');
+
     actionButtons.click(function() {
       if (isRun()) {
         actionButtons.removeClass('active');
@@ -194,8 +187,7 @@
       }
     });
 
-    loadPics();   
-
+    loadPics();
   });
 </script>
 </html>

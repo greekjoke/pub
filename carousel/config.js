@@ -7,8 +7,18 @@ window.CarouselConfig = {
             "default": true,
             "active": true,
             "source": [
-                "data/animal/cat001.jpg",
-                "data/animal/dog001.jpg",
+                "data/animal/001.jpg",
+                "data/animal/002.jpg",
+                "data/animal/301.jpg",
+                "data/animal/302.jpg",
+                "data/animal/303.jpg",
+                "data/animal/304.jpg",
+                "data/animal/305.jpg",
+                "data/animal/306.jpg",
+                "data/animal/307.jpg",
+                "data/animal/308.jpg",
+                "data/animal/309.jpg",
+                "data/animal/310.jpg",
                 "data/smile/001.jpg",
                 "data/smile/002.jpg",
                 "data/smile/003.jpg",
@@ -30,6 +40,13 @@ window.CarouselConfig = {
                 "data/smile/019.jpg",
                 "data/smile/020.jpg",
                 "data/smile/021.jpg",
+                "data/smile/201.jpg",
+                "data/smile/202.jpg",
+                "data/smile/203.jpg",
+                "data/smile/205.jpg",
+                "data/smile/206.jpg",
+                "data/smile/207.jpg",
+                "data/smile/208.jpg",
                 "data/sad/sad.jpg"
             ]
         },
@@ -39,8 +56,18 @@ window.CarouselConfig = {
             "active": true,
             "order": 1,
             "source": [
-                "data/animal/cat001.jpg",
-                "data/animal/dog001.jpg"
+                "data/animal/001.jpg",
+                "data/animal/002.jpg",
+                "data/animal/301.jpg",
+                "data/animal/302.jpg",
+                "data/animal/303.jpg",
+                "data/animal/304.jpg",
+                "data/animal/305.jpg",
+                "data/animal/306.jpg",
+                "data/animal/307.jpg",
+                "data/animal/308.jpg",
+                "data/animal/309.jpg",
+                "data/animal/310.jpg"
             ]
         }
     ]

@@ -47,3 +47,12 @@ const storageRead = function(key) {
     return false;
   }
 };
+
+const shuffle = function (array) {
+  let c = array.length,  i;
+  while (c != 0) {
+    i = Math.floor(Math.random() * c--);
+    [array[c], array[i]] = [array[i], array[c]];
+  }
+  return array;
+};

@@ -67,9 +67,10 @@ foreach($config->dataset as $di => $dataset) {
     $setName = $p['name'];
     $f = 1.0 * $p['weight'] / $sumWeight;
     $n = round($sumFiles * $f + 0.5);
-    if ($n > count($p['src'])) {      
-      print WARN."[$id:$setName] files count is not enough for required portion ($n)".NL;
-      $n = count($p['src']);
+    $z = count($p['src']);
+    if ($n > $z) {      
+      print WARN."[$id:$setName] files count is not enough for required portion ($z/$n)".NL;
+      $n = $z;
     }
     $resList = array_merge(array_slice($p['src'], 0, $n), $resList);
   }
