@@ -9,6 +9,8 @@
   <script src="https://code.jquery.com/jquery-2.2.4.min.js"
     integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
     crossorigin="anonymous"></script>
+  <script src="script.js"></script>
+  <script src="config.js?t={TIMESTAMP}"></script>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -16,16 +18,23 @@
     <div id="center-wrap">
       <div id="center">
         <div id="pic"></div>
-        <div id="action">                      
+        <div id="action">                                
           <button data-rate="5">1/5</button>
           <button data-rate="10">1/10</button>
           <button data-rate="20">1/20</button>
           <button data-rate="25">1/25</button>          
-          <button data-rate="50">1/50</button>
-        </div>          
+          <button data-rate="50">1/50</button> 
+          <button data-rate="100">1/100</button>
+          <div style="margin-top: 5px;">
+            <label>Dataset&nbsp;
+              <select id="preset"></select>
+            </label>
+          </div>
+        </div>         
       </div>
     </div>    
   </div>
+  <div id="fps" title="Frames per second">--</div>
   <div id="prepareWrap">
     <div id="prepare">
       <div>Loading...</div>
@@ -38,9 +47,41 @@
   
   $(document).ready(function() {
 
-    /*let ar = [{PLACEHOLDER}];*/
+    const uriParams = parseUriParams();    
+    const saved = storageRead('carousel');
+
+    const cfg = window.CarouselConfig;
+    const presets = cfg['dataset'];
+    const ePreset = $('#preset');    
+    let curPresetId = uriParams['preset'] || saved.preset || '';
+    let ar = [];
+
+    presets.sort((a,b) => {
+      return a.order||0 - b.order||0;
+    });
     
-    let ar = ["photos/001.jpg","photos/002.jpg","photos/003.jpg","photos/004.jpg","photos/005.jpg","photos/006.jpg","photos/007.jpg","photos/008.jpg","photos/009.jpg","photos/010.jpg","photos/011.jpg","photos/012.jpg","photos/013.jpg","photos/014.jpg","photos/015.jpg","photos/016.jpg","photos/017.jpg","photos/018.jpg","photos/019.jpg","photos/020.jpg","photos/021.jpg","photos/201.jpg","photos/202.jpg","photos/203.jpg","photos/205.jpg","photos/206.jpg","photos/207.jpg","photos/208.jpg","photos/209.jpg","photos/sad.jpg"];
+    presets.forEach(x => {      
+      if (!x.active) return;
+
+      if (!curPresetId && x.default) {
+        curPresetId = x.id;
+      }
+
+      const sel = (curPresetId == x.id) ? 'selected' : '';
+      ePreset.append('<option value="'+x.id+'" '+sel+'>'+x.title+'</option>');
+
+      if (sel) {        
+        document.title = x.title + ' :: ' + document.title;
+        ar = x.source;
+      }
+    });
+
+    ePreset.change(function() {
+      const v = $(this).val();
+      document.location.href = '?preset=' + v;
+    });
+
+    storageWrite('carousel', {preset:curPresetId});
 
     const place = document.getElementById('pic');
     const numPics = ar.length;
@@ -67,10 +108,9 @@
       img.id = 'pic-' + indices.length;
       img.onload = function() {        
         indices.push(indices.length);
-        setProgress(100 * indices.length / numPics);
-        // setTimeout(() => {
-          loadNextPic(list);
-        // },500);
+        $(img).addClass('selected'); // prepare to show
+        setProgress(100 * indices.length / numPics);        
+        loadNextPic(list);        
       };
       img.src = x;
       place.append(img);      
@@ -82,16 +122,15 @@
     };
 
     const onLoadingSuccess = function() {
+      $('#pic img').removeClass('selected'); // hide all
       setTimeout(function() {
         $('#prepareWrap').hide();
-      },1500);
+      },800);
     }  
 
     const isRun = function() {
       return (timer != null);
     }
-
-    let cur = null;
 
     const stop = function() {
       if (!timer) return;
@@ -99,18 +138,36 @@
       timer = null;      
     }
 
+    let cur = null;
+
     const start = function(delay) {
-      stop();      
+      stop();    
+      
+      let statFrames = 0;
+      let statTimeStart = new Date();
+
       timer = setInterval(function() {
         if (next === 0) { // mix series every cycle
           indices = shuffle(indices);          
         }
+
         const i = indices[next];
         const e = $('img#pic-'+i);
+        
         cur ? cur.removeClass('selected') : false;
         e.addClass('selected');
         cur = e;
         next = (next + 1) % indices.length;        
+        
+        statFrames++;
+        const ts = new Date();
+        const diff = ts.getTime() - statTimeStart.getTime();
+        if (diff >= 1000) { // every 1 second
+          $('#fps').text(statFrames);
+          statTimeStart = ts;
+          statFrames = 0;
+        }
+
       },delay);
     }
 

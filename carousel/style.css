@@ -10,7 +10,7 @@ html, body {
 }
 body {
   background-color: rgb(45, 45, 45);
-  color: rgba(220,220,220);  
+  color: gray;  
 }
 button {  
   cursor: pointer;
@@ -98,4 +98,12 @@ button.active {
   background-image: url('progress.png');
   background-size: 276px 125px;
   background-repeat: no-repeat;
+}
+#fps {
+  position: absolute;    
+  background-color: rgba(0,0,0,0.7);
+  bottom: 0;
+  left: 0;
+  padding: 5px;
+  color: green;  
 }

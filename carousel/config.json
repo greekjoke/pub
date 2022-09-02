@@ -1,0 +1,27 @@
+{
+    "title": "Carousel",
+    "dataset":
+    [
+        { 
+            "id": "default", 
+            "title": "Основной", 
+            "default": true,
+            "active": true,             
+            "source": [
+                { "path": "smile", "portion": "2", "max": "30", "min": "12" },
+                { "path": "animal", "portion": "1" },
+                { "path": "sad", "quantity": "1" },
+                { "path": "other", "skip": true }
+            ]
+        },
+        { 
+            "id": "animals", 
+            "title": "Животные",
+            "active": true, 
+            "order": 1,
+            "source": [
+                { "path": "animal", "portion": "1" }
+            ]
+        }
+    ]
+}
