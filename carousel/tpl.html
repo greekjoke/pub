@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="main">
+  <div id="main" style="display: none;">
     <div id="center-wrap">
       <div id="center">
         <div id="pic"></div>
@@ -38,7 +38,7 @@
   <div id="fps" title="Frames per second">--</div>
   <div id="prepareWrap">
     <div id="prepare">
-      <div>Loading...</div>
+      <div class="text">Loading...</div>
       <div class="progressBar"></div>
     </div>
   </div>
@@ -68,8 +68,9 @@
         curPresetId = x.id;
       }
 
+      const title = x.title + ' (' + x.source.length + ')';
       const sel = (curPresetId == x.id) ? 'selected' : '';
-      ePreset.append('<option value="'+x.id+'" '+sel+'>'+x.title+'</option>');
+      ePreset.append('<option value="'+x.id+'" '+sel+'>'+title+'</option>');
 
       if (sel) {        
         document.title = x.title + ' :: ' + document.title;
@@ -104,21 +105,52 @@
         setProgress(100 * indices.length / numPics);        
         loadNextPic(list);        
       };
+      img.onerror = function() {
+        onLoadingError(x);
+      };
       img.src = x;
       place.append(img);      
     }
 
+    const loadNextPicFast = function(list) {      
+      if (list.length < 1) return;
+      const x = list.pop();      
+      const img = new Image;
+      img.id = 'pic-' + list.length;
+      img.onload = function() {                
+        indices.push(indices.length);
+        $(img).addClass('selected'); // prepare to show
+        setProgress(100 * indices.length / numPics);
+        if (indices.length == numPics) {
+          onLoadingSuccess();
+        }
+      };
+      img.onerror = function() {
+        onLoadingError(x);
+      };
+      img.src = x;
+      place.append(img);
+      loadNextPicFast(list);
+    }
+
     const loadPics = function() {
       setProgress(0);
-      loadNextPic(ar);
+      // loadNextPic(ar);
+      loadNextPicFast(ar);
     };
 
     const onLoadingSuccess = function() {
+      $('#main').show(); // show desk
       $('#pic img').removeClass('selected'); // hide all
       setTimeout(function() {
         $('#prepareWrap').hide();
       },800);
     }  
+
+    const onLoadingError = function(x) {
+      console.error('loading failed', x);
+      $('#prepare .text').text('Error: ' + x);
+    }
 
     const isRun = function() {
       return (timer != null);
