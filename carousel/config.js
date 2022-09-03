@@ -46,7 +46,6 @@ window.CarouselConfig = {
                 "data/smile/205.jpg",
                 "data/smile/206.jpg",
                 "data/smile/207.jpg",
-                "data/smile/208.jpg",
                 "data/sad/sad.jpg"
             ]
         },

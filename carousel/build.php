@@ -66,11 +66,13 @@ foreach($config->dataset as $di => $dataset) {
   foreach($portion as $p) {
     $setName = $p['name'];
     $f = 1.0 * $p['weight'] / $sumWeight;
-    $n = round($sumFiles * $f + 0.5);
+    $n = floor($sumFiles * $f + 0.5);
     $z = count($p['src']);
     if ($n > $z) {      
       print WARN."[$id:$setName] files count is not enough for required portion ($z/$n)".NL;
       $n = $z;
+    } else {
+      print "[$id:$setName] $n files used from $z".NL;
     }
     $resList = array_merge(array_slice($p['src'], 0, $n), $resList);
   }
