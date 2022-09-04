@@ -6,6 +6,7 @@
             "id": "default", 
             "title": "Основной", 
             "default": true,
+            "order": -1,
             "active": true,             
             "source": [
                 { "path": "smile", "portion": "2", "max": "30", "min": "12" },
@@ -17,10 +18,115 @@
         { 
             "id": "animals", 
             "title": "Животные",
-            "active": true, 
-            "order": 1,
+            "active": true,             
             "source": [
                 { "path": "animal", "portion": "1" }
+            ]
+        },
+        { 
+            "id": "emo", 
+            "title": "Эмоции",
+            "active": true,                
+            "source": [
+                { "path": "восторг", "portion": "1" },
+                { "path": "гнев", "portion": "1" },
+                { "path": "интерес", "portion": "1" },
+                { "path": "любовь", "portion": "1" },
+                { "path": "печаль", "portion": "1" },
+                { "path": "спокойствие", "portion": "1" },
+                { "path": "страх", "portion": "1" },
+                { "path": "удивление", "portion": "1" }
+            ]
+        },
+        { 
+            "id": "delight", 
+            "title": "Восторг",
+            "active": true,    
+            "order": 20,
+            "source": [
+                { "path": "восторг", "portion": "1" }
+            ]
+        },
+        { 
+            "id": "anger", 
+            "title": "Гнев",
+            "active": true,     
+            "order": 20,        
+            "source": [
+                { "path": "гнев", "portion": "1" }
+            ]
+        },
+        { 
+            "id": "interest", 
+            "title": "Интерес",
+            "active": true,             
+            "order": 20,
+            "source": [
+                { "path": "интерес", "portion": "1" }
+            ]
+        },
+        { 
+            "id": "love", 
+            "title": "Любовь",
+            "active": true,             
+            "order": 20,
+            "source": [
+                { "path": "любовь", "portion": "1" }
+            ]
+        },
+        { 
+            "id": "sadness", 
+            "title": "Печаль",
+            "active": true,      
+            "order": 20,       
+            "source": [
+                { "path": "печаль", "portion": "1" }
+            ]
+        },
+        { 
+            "id": "rest", 
+            "title": "Спокойствие",
+            "active": true,    
+            "order": 20,         
+            "source": [
+                { "path": "спокойствие", "portion": "1" }
+            ]
+        },
+        { 
+            "id": "fear", 
+            "title": "Страх",
+            "active": true,             
+            "order": 20,
+            "source": [
+                { "path": "страх", "portion": "1" }
+            ]
+        },
+        { 
+            "id": "surprise", 
+            "title": "Удивление",
+            "active": true,  
+            "order": 20,          
+            "source": [
+                { "path": "удивление", "portion": "1" }
+            ]
+        },        
+        { 
+            "id": "peekaboo", 
+            "target": "peekaboo", 
+            "active": true,
+            "unique": true,
+            "shuffle": true,
+            "max": 50,
+            "source": [
+                { "path": "smile", "portion": "1" },
+                { "path": "восторг", "portion": "1" },
+                { "path": "гнев", "portion": "1" },
+                { "path": "интерес", "portion": "1" },
+                { "path": "любовь", "portion": "1" },
+                { "path": "печаль", "portion": "1" },
+                { "path": "спокойствие", "portion": "1" },
+                { "path": "страх", "portion": "1" },
+                { "path": "удивление", "portion": "1" }
             ]
         }
     ]

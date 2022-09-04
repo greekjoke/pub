@@ -58,11 +58,18 @@
     let ar = [];
 
     presets.sort((a,b) => {
-      return a.order||0 - b.order||0;
+      const x = a.order || 0;
+      const y = b.order || 0;
+      if (a == b) {
+        return a.title.localeCompare(b.title);
+      } else {
+        return x - y;
+      }
     });
     
     presets.forEach(x => {      
       if (!x.active) return;
+      if (x.target !== undefined && x.target != 'carousel') return;
 
       if (!curPresetId && x.default) {
         curPresetId = x.id;

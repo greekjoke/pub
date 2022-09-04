@@ -22,12 +22,19 @@ if (empty($config->dataset))
 
 print 'build datasets...'.NL;
 
+$lkupIds = [];
+
 foreach($config->dataset as $di => $dataset) {  
   $id = $dataset->id;
   $resList = [];
   $portion = [];
   $sumWeight = 0;
   $sumFiles = 0;
+
+  if (array_key_exists($id, $lkupIds))
+    die(ERR."[$id] id is already exist");
+
+  $lkupIds[$id] = $dataset;
 
   foreach($dataset->source as $si => $src) {  
     if (isset($src->skip) && $src->skip)  
@@ -75,6 +82,19 @@ foreach($config->dataset as $di => $dataset) {
       print "[$id:$setName] $n files used from $z".NL;
     }
     $resList = array_merge(array_slice($p['src'], 0, $n), $resList);
+  }
+
+  if (isset($dataset->unqique) && $dataset->unqique) {
+    $resList = array_unique($resList);
+  }
+
+  if (isset($dataset->shuffle) && $dataset->shuffle) {
+    shuffle($resList);
+  }
+
+  if (isset($dataset->max)) {
+    $max = (int)$dataset->max;
+    $resList = array_slice($resList, 0, $max);
   }
 
   $config->dataset[$di]->source = $resList;
