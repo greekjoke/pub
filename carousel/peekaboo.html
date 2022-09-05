@@ -133,7 +133,7 @@
       onWheel(1);
     });
 
-    $('html').on('swipeleft', function() {      
+    $('html').on('swipeleft swiperight', function() {      
       const obs = $('.obstacle.uncovered');
       if (obs.length > 0) {
         flip();
