@@ -95,7 +95,7 @@
       $('#card').toggleClass('flip');
                 
       setTimeout(function() {
-        $('.obstacle').removeClass('notransition');
+        $('.obstacle').removeClass('notransition uncovered uncover paused');
         prepareBackData();
       }, 1000);
     }
@@ -133,8 +133,7 @@
       onWheel(1);
     });
 
-    $('html').on('swipeleft', function() {
-      console.log('swipeleft');
+    $('html').on('swipeleft', function() {      
       const obs = $('.obstacle.uncovered');
       if (obs.length > 0) {
         flip();
