@@ -65,47 +65,46 @@ const swipeDetect = function() {
 
   host.data('swipeDetect', 1);
   
-  document.addEventListener('touchstart', handleTouchStart, false);        
+  document.addEventListener('touchstart', handleTouchStart, false);
   document.addEventListener('touchmove', handleTouchMove, false);
   
-  let xDown = null;                                                        
+  let xDown = null;
   let yDown = null;
 
   function getTouches(evt) {
     return evt.touches ||             // browser API
            evt.originalEvent.touches; // jQuery
   }                                                     
-                                                                           
+  
   function handleTouchStart(evt) {
-    const firstTouch = getTouches(evt)[0];                                      
-    xDown = firstTouch.clientX;                                      
-    yDown = firstTouch.clientY;                                      
-  };                                                
-                                                                           
+    const firstTouch = getTouches(evt)[0];
+    xDown = firstTouch.clientX;
+    yDown = firstTouch.clientY;
+  }
+  
   function handleTouchMove(evt) {
       if (!xDown || !yDown ) return;
   
-      const xUp = evt.touches[0].clientX;                                    
+      const xUp = evt.touches[0].clientX;
       const yUp = evt.touches[0].clientY;  
       const xDiff = xDown - xUp;
       const yDiff = yDown - yUp;
-                                                                           
-      if (Math.abs(xDiff) > Math.abs(yDiff) ) {
+    
+      if (Math.abs(xDiff) > Math.abs(yDiff)) {
           if (xDiff > 0) {
-            host.trigger('swiperight'); /* right swipe */ 
+            host.trigger('swiperight');
           } else {
-            host.trigger('swipeleft'); /* left swipe */
+            host.trigger('swipeleft');
           }                       
-      } else {
+      } else {        
           if (yDiff > 0) {
-            host.trigger('swipeup'); /* up swipe */
+            host.trigger('swipeup');
           } else { 
-            host.trigger('swipedown'); /* down swipe */             
-          }                                                                 
+            host.trigger('swipedown');            
+          }
       }
 
-      /* reset values */
       xDown = null;
-      yDown = null;                                             
-  };    
+      yDown = null;
+  }    
 };
