@@ -24,6 +24,13 @@
         <div class="obstacle" data-tile="1"></div>          
     </div>   
   </div>
+  <div id="intro">
+    <div id="introInner">
+      <img src="peekaboo.png">
+      <p style="margin-top:0;">Используйте клик (тап) для <b>действия</b>.
+      А так же колесо (свайп вниз) для <b>сброса шторки</b>.</p>
+    </div>
+  </div>
 </body>
 <script>
   $(document).ready(function() {
@@ -43,66 +50,94 @@
     let indices = [], cur = 0, nextTile = 2;
     ar.forEach(x => indices.push(indices.length));
     indices = shuffle(indices);
-    
-    const next = function() {
-      const x = indices[cur]
-      cur = (cur + 1) % indices.length;
-      return ar[x];
-    }
 
     const eImgF = $('.card-front img')[0];
     const eImgB = $('.card-back img')[0];
     const eObsF = $('.card-front .obstacle');
     const eObsB = $('.card-back .obstacle');
+    
+    const nextSource = function() {
+      const x = indices[cur]
+      cur = (cur + 1) % indices.length;
+      return ar[x];
+    }
 
-    eImgF.src = next();    
-    eImgB.src = next();
+    const init = function() {
+      swipeDetect();
+      eImgF.src = nextSource();    
+      eImgB.src = nextSource();
+    }
 
-    let tStart = null;
-
-    $('.main').click(function() {  
-      const t = new Date();      
-      
-      tStart = tStart || t;
-
-      const delta = (t.getTime() - tStart.getTime()) / 1000;
-      const obs = $(this).find('.obstacle');
-      
-      if (obs.hasClass('uncovered') || 
-        (obs.hasClass('uncover') && delta > 15)) 
-      {
-        tStart = null;
-
-        $('.obstacle').addClass('notransition');
-
-        if ($('#card').hasClass('flip')) {
-          $('.card-front .obstacle').removeClass('uncovered uncover');
-        } else {
-          $('.card-back .obstacle').removeClass('uncovered uncover');
-        }        
-
-        $('#card').toggleClass('flip');
-                
-        setTimeout(function() {
-          $('.obstacle').removeClass('notransition');
-          const e = $('#card').hasClass('flip') ? eImgF : eImgB;
-          e.src = next();
-          const z = $('#card').hasClass('flip') ? eObsF : eObsB;
-          z.attr('data-tile', nextTile);
-          nextTile = (nextTile + 1) % 3;
-        }, 1000);
-      } 
-      else if (obs.hasClass('uncover')) 
-      {
+    const drop = function(obs) {
+      if (obs.length > 0 && obs.hasClass('uncover')) {
         obs.removeClass('uncover');
         obs.addClass('uncovered');
-      } 
-      else 
-      {
-        obs.addClass('uncover');
-        tStart = t;
+      }
+    }
+
+    const prepareBackData = function() {
+      const e = $('#card').hasClass('flip') ? eImgF : eImgB;
+      e.src = nextSource();
+      const z = $('#card').hasClass('flip') ? eObsF : eObsB;
+      z.attr('data-tile', nextTile);
+      nextTile = (nextTile + 1) % 3;
+    }
+
+    const flip = function() {
+      $('.obstacle').addClass('notransition');
+
+      if ($('#card').hasClass('flip')) {
+        $('.card-front .obstacle').removeClass('uncovered uncover paused');
+      } else {
+        $('.card-back .obstacle').removeClass('uncovered uncover paused');
+      }        
+
+      $('#card').toggleClass('flip');
+                
+      setTimeout(function() {
+        $('.obstacle').removeClass('notransition');
+        prepareBackData();
+      }, 1000);
+    }
+
+    $('.obstacle').on('animationend', function() {      
+      const obs = $(this);
+      drop(obs);
+    });
+
+    $('.main').click(function() {
+      const obs = $(this).find('.obstacle');
+      if (obs.hasClass('uncovered')) {
+        flip();
+      } else if (obs.hasClass('uncover')) {        
+        obs.toggleClass('paused');
+      } else {
+        obs.addClass('uncover');        
       }
     });
+
+    const onWheel = function(delta) {
+      const obs = $('.obstacle.uncover');
+      drop(obs);
+    }    
+
+    $('html').on('mousewheel', function(e) { /* firefox */
+      onWheel(e.originalEvent.wheelDelta);
+    });   
+
+    $('html').on('DOMMouseScroll', function(e) { /* chrome & etc */
+      onWheel(e.originalEvent.detail);
+    });
+
+    $('html').on('swipedown', function() {
+      onWheel(1);
+    });
+
+    $('#intro').click(function() {
+      $(this).hide();
+    })
+
+    init();
 
   });
 </script>
