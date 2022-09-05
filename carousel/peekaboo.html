@@ -129,8 +129,16 @@
       onWheel(e.originalEvent.detail);
     });
 
-    $('html').on('swipedown', function() {
+    $('html').on('swipedown', function() {      
       onWheel(1);
+    });
+
+    $('html').on('swipeleft', function() {
+      console.log('swipeleft');
+      const obs = $('.obstacle.uncovered');
+      if (obs.length > 0) {
+        flip();
+      }
     });
 
     $('#intro').click(function() {

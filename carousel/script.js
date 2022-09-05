@@ -90,11 +90,11 @@ const swipeDetect = function() {
       const xDiff = xDown - xUp;
       const yDiff = yDown - yUp;
     
-      if (Math.abs(xDiff) > Math.abs(yDiff)) {
+      if (Math.abs(xDiff) > Math.abs(yDiff)) {        
           if (xDiff > 0) {
-            host.trigger('swiperight');
-          } else {
             host.trigger('swipeleft');
+          } else {
+            host.trigger('swiperight');            
           }                       
       } else {        
           if (yDiff > 0) {
