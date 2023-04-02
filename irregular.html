@@ -90,6 +90,9 @@
     position: absolute;
     margin-top: -5px;
   }
+  body.mobile button.speakerIcon {
+    display: none;
+  }
 </style>
 <body>
   <div id="main">
@@ -334,8 +337,10 @@ $('#bnCheck').click(()=>check());
 $('#bnNext').click(()=>next());
 
 flat = shuffle(flat);
-next();
+
+detectMobile();
 initSpeakSynth();
+next();
 
 function initSpeakSynth() {            
   const synth = window.speechSynthesis;
@@ -399,6 +404,12 @@ function initSpeakSynth() {
     const text = $('#pp').val();
     convertTextToSpeech(text);
   });
+}
+
+function detectMobile() {
+  if (/Android|iPhone/i.test(navigator.userAgent)) {
+    $('body').addClass('mobile');
+  }
 }
 
 </script>
