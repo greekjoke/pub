@@ -76,6 +76,20 @@
     color: yellow;
     text-decoration: underline;
   }
+  .speakerIcon {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAC50lEQVRYhc3XTWgdVRQH8N8dau2ihBpCEJHqooQiRVxoQdNCpBXBlYoIOhsXIoiCVI1YN6IgUhAtFhFc1NWFKrrQjUgFbaWg+LFQEAkimEXVUGIRcVFCr4s5L+/1+V5eJq9B/zDMnI875z/33nPOHf5jpI0MKtkkDuOrVHt3HAJbNhB8Ah/jZiwxHoGqZfCteD+Cw8QI/4mSbb8sBEpW4W0c7FEPncGSTeMX/Fqy50oe7NtmBo7gwRbjt8W1HS/hTMmu3hCBkj2OpweYho5PtUXM4otQ7cXnJbu2FYGS3YvX1kN0AIlvsR+vhGoXTpZsx7oIlGwfshbZUrK5ku3tIbGSavN4MVS78caqPTbXBLb2vet6fITJtQKmultLSnYDvg/xKOZT7WLY4B3cH/bbU+2zSpNWf+D3vuvLUcEHYAlnNTP7JN6MwFINHsVy+D4vHG9rGWQoUu0cbtHdeI/g4R77su5+mivZTGUD1XAEid9wJxZCdSSqZwfHaZYFd7eqhC1I/InHQpzUXXepdhbfhThbaVmOW+AT/BTPB/psHQIz4wa/OMwQm+6HEHf2mZfiPrVZX79ubBqBSL/dIS72mafjfq6yxjSOiYOYiedP+2w3xX1hU2Yg0u5YiMs40WO7BntCPFNh5TIHn9aU8M70H4607OAh3aX/sNKtWhvBJctXsil8o1tdj+OtHvskDoV4OtV+3IJ7NMWitxlVmmb0gXb9YBer/f51HIp07OAYpuL5BUaciqMdn9ScbAZhJdWu6BtzF/5KtdN9+mfxcognUu2BkQRi4H2aNjpow15ItStHjK8i8DOhWsCt0ZhG14FUew9PjfIbEnwPTvUE/xl3dIKvi0CQOIpXB5iG1pCS7dScKfaF6mvsj7PiKtrUgXn//glZq4hd0KT435rDx2x0wkvQ6tesZNs0OT4XqvOpdtUa/jsg1c4P82n9bxgvPYUbsZhq17V9Ry9al+L4mgOaPfHEOMH/F/gHvga/aP10KtYAAAAASUVORK5CYII=');
+    background-repeat: no-repeat;
+    background-size: 100%;
+    min-width: 3rem;
+    padding: 5px;
+    text-indent: -9999px;
+    background-color: transparent;
+    border: 0;
+  }
+  #bnSpeakVb, #bnSpeakPt, #bnSpeakPp {    
+    position: absolute;
+    margin-top: -5px;
+  }
 </style>
 <body>
   <div id="main">
@@ -93,15 +107,18 @@
         <label>
           <span>Verb</span>
           <input id="vb" class="answer" readonly value="" autocomplete="off">
-        </label>
+          <button id="bnSpeakVb" class="speakerIcon">S</button>
+        </label>        
         <label>
           <span>Past Simple</span>
           <input id="pt" class="answer" readonly value="" autocomplete="off">
-        </label>
+          <button id="bnSpeakPt" class="speakerIcon">S</button>
+        </label>        
         <label>
           <span>Past Participle</span>
           <input id="pp" class="answer" readonly value="" autocomplete="off">
-        </label>
+          <button id="bnSpeakPp" class="speakerIcon">S</button>
+        </label>        
       </div>
       <div id="ctrl">
         <button id="bnCheck">Check</button>
@@ -318,6 +335,71 @@ $('#bnNext').click(()=>next());
 
 flat = shuffle(flat);
 next();
+initSpeakSynth();
+
+function initSpeakSynth() {            
+  const synth = window.speechSynthesis;
+  
+  if (!synth) {
+    console.error('speechSynthesis is not supported');
+    $('button.speakerIcon').hide();
+    return false;
+  }
+
+  function loadVoices() {
+    const list = synth.getVoices();
+    console.log('voices', list);        
+    return list;
+  }
+  
+  let voices = null;
+  const U = new SpeechSynthesisUtterance();      
+
+  function convertTextToSpeech(text) {
+    if (synth.speaking) return;
+
+    const trimmed = text.trim();
+    if (!trimmed) return;
+
+    voices = voices || loadVoices();
+    if (voices.length < 1) return;
+    
+    let voiceIndex = voices.findIndex(
+      (voice) => voice.name === 'Google UK English Male'
+    );
+    if (voiceIndex == -1) {
+      voiceIndex = voices.findIndex( // fallback variant
+        (voice) => (voice.lang === 'en-GB' || voice.lang === 'en-US')
+      );
+    }
+
+    const voice = voices[voiceIndex];
+
+    U.text = trimmed;        
+    U.voice = voice;
+    U.lang = voice.lang;
+    U.volume = 1.0;
+    U.rate = 0.8;
+    U.pitch = 0.7;
+
+    synth.speak(U);
+  }
+
+  $('#bnSpeakVb').click(function() {    
+    const text = $('#vb').val();
+    convertTextToSpeech(text);
+  });
+
+  $('#bnSpeakPt').click(function() {    
+    const text = $('#pt').val();
+    convertTextToSpeech(text);
+  });
+
+  $('#bnSpeakPp').click(function() {    
+    const text = $('#pp').val();
+    convertTextToSpeech(text);
+  });
+}
 
 </script>
 </html>
