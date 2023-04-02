@@ -556,7 +556,7 @@
     });
 
     $('body').keyup(function(e){   
-      if (e.keyCode == 32) {
+      if (e.keyCode == 32) { // [space]
         if ($('#con').hasClass('hideAnswer')) {
           $('#bnCheck').trigger('click');
         } else {      
@@ -623,6 +623,12 @@
         if (synth.speaking) return;        
         const text = getEnText();
         convertTextToSpeech(text);
+      });
+
+      $('body').keyup(function(e){           
+        if (e.keyCode == 90) { // [z]
+          $('#bnSpeak').trigger('click');
+        }
       });
     }
 
