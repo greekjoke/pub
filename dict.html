@@ -173,6 +173,9 @@
     background-color: transparent;
     border: 0;
   }
+  body.mobile #bnSpeak {
+    display: none;
+  }
 </style>
 <body>
   <div id="main">
@@ -564,6 +567,7 @@
 
     updateState();
     initSpeakSynth();
+    detectMobile();
 
     if (document.location.href.indexOf('ignoreStorage=') == -1) {
       tryToLoadFromStorage();
@@ -623,6 +627,12 @@
     }
 
   });
+
+  function detectMobile() {
+    if (/Android|iPhone/i.test(navigator.userAgent)) {
+      $('body').addClass('mobile');
+    }
+  }
   
 </script>
 </html>
