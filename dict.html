@@ -173,9 +173,12 @@
     background-color: transparent;
     border: 0;
   }
-  body.mobile #bnSpeak {
+  body.mobile .speaker-depends,
+  body.speaker-not .speaker-depends,
+  body.voices-empty .speaker-depends
+  {
     display: none;
-  }
+  }    
 </style>
 <body>
   <div id="main">
@@ -189,7 +192,7 @@
       <div id="fields">                  
         <input id="text1" readonly autocomplete="off">
         <input id="text2" readonly autocomplete="off">
-        <button id="bnSpeak">SPEAK</button>
+        <button id="bnSpeak" class="speaker-depends" title="Озвучить текст">SPEAK</button>
       </div>      
       <div id="ctrl">
         <button id="bnCheck">Check</button>
@@ -201,6 +204,7 @@
         <p>Для работы с тренажером, необходимо подготовить Excel файл (<a href="dict.xlsx">пример</a>), в котором будут колонки <b>en</b> и <b>ru</b>. Так же, может присутствовать колонка <b>tag</b>, в которой будут перечислены через запятую категории слова. Допустимо размещение слов на разных листах.</p> 
         <p>Ещё одна полезная, но необязательная колонка <b>using</b>. В ней можно разместить примеры использования слова в фразах.</p>        
         <p>Клавиша пробел (space) дублирует нажатие мышкой по кнопкам Check и Next.</p>
+        <p class="speaker-depends">Клавиша Z озвучивает текст.</p>
         <div style="text-align: center; margin-top: 20px;"><a href="javascript:void(0);" class="scroll-top">Вернуться к началу</a></div></div>
     </div>  
   </div>
@@ -578,13 +582,19 @@
       
       if (!synth) {
         console.error('speechSynthesis is not supported');
-        $('#bnSpeak').hide();
+        $('body').addClass('speaker-not');        
         return false;
       }
 
+      $('body').addClass('speaker-present');
+
       function loadVoices() {
-        const list = synth.getVoices();
-        console.log('voices', list);        
+        const list = synth.getVoices() || [];
+        console.log('voices', list);
+        if (!list || list.length < 1)
+          $('body').addClass('voices-empty');
+        else
+          $('body').addClass('voices-present');
         return list;
       }
       
@@ -592,6 +602,8 @@
       const U = new SpeechSynthesisUtterance();      
 
       function convertTextToSpeech(text) {
+        if (synth.speaking) return;
+
         const trimmed = text.trim();
         if (!trimmed) return;
 
@@ -619,8 +631,7 @@
         synth.speak(U);
       }
 
-      $('#bnSpeak').click(function() {
-        if (synth.speaking) return;        
+      $('#bnSpeak').click(function() {        
         const text = getEnText();
         convertTextToSpeech(text);
       });
