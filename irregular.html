@@ -326,17 +326,29 @@ function next() {
   $('#pt').val(item[2]);
   $('#pp').val(item[3]);
   $('#con').addClass('hideAnswer');
+  $('#tr').focus();
   i++;
 }
 
 function check() {
   $('#con').removeClass('hideAnswer');
+  $('#tr').focus();
 }
 
 $('#bnCheck').click(()=>check());
 $('#bnNext').click(()=>next());
 
 flat = shuffle(flat);
+
+$('body').keyup(function(e) {
+  if (e.keyCode == 32) { // [space]
+    if ($('#con').hasClass('hideAnswer')) {
+      $('#bnCheck').trigger('click');
+    } else {      
+      $('#bnNext').trigger('click');
+    }
+  }
+});
 
 detectMobile();
 initSpeakSynth();
