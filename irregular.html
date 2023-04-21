@@ -420,6 +420,14 @@ function initSpeakSynth() {
     const text = $('#pp').val();
     convertTextToSpeech(text);
   });
+
+  $('body').keyup(function(e) {    
+    switch (e.keyCode) {
+      case 49: $('#bnSpeakVb').trigger('click'); break;
+      case 50: $('#bnSpeakPt').trigger('click'); break;
+      case 51: $('#bnSpeakPp').trigger('click'); break;
+    }
+  });
 }
 
 function detectMobile() {
