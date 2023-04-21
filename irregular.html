@@ -90,7 +90,32 @@
     position: absolute;
     margin-top: -5px;
   }
+  body.mobile .speaker-depends,
+  body.speaker-not .speaker-depends,
+  body.voices-empty .speaker-depends,
   body.mobile button.speakerIcon {
+    display: none;
+  }
+  #help {
+    font-size: 1.32rem;        
+    padding: 5px 8px;        
+    text-align: justify;    
+  }
+  #help:before {    
+    content: '';
+    display: block;
+    border-top: 1px solid #555;
+    height: 1px;
+    margin: 0 12px;
+  }  
+  #help b {
+    color: white;
+  }
+  #help a {
+    margin: 0;
+    color: yellow;
+  }
+  body.mobile #help {
     display: none;
   }
 </style>
@@ -127,7 +152,11 @@
         <button id="bnCheck">Check</button>
         <button id="bnNext">Next</button>
       </div>
-    </div>  
+      <div id="help">      
+        <p>Клавиша пробел (space) дублирует нажатие мышкой по кнопкам Check и Next.</p>
+        <p class="speaker-depends">Клавишы 1, 2 и 3 озвучивают текст.</p>      
+      </div> 
+    </div>      
   </div>
 </body>
 <script>
